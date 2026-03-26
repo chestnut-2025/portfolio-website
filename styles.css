@@ -164,7 +164,7 @@ body {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding: var(--nav-height) var(--pad-x) 0;
+    padding: 0 var(--pad-x);
     max-width: var(--max-width);
     margin: 0 auto;
 }
