@@ -226,106 +226,184 @@ body {
 }
 
 /* ============================================================
-   WORK
+   WORK — STICKY STORYTELLING
 ============================================================ */
 .work {
-    max-width: var(--max-width);
-    margin: 0 auto;
-    padding: 0 var(--pad-x) var(--pad-section);
-}
-
-.section-header {
-    display: flex;
-    align-items: center;
-    padding: 48px 0 40px;
     border-top: 1px solid var(--border);
 }
 
-.projects {
-    display: flex;
-    flex-direction: column;
-}
-
-.project-card {
-    border-bottom: 1px solid var(--border);
-}
-
-.project-link {
-    display: grid;
-    grid-template-columns: 180px 1fr 48px;
-    align-items: center;
-    gap: 40px;
-    padding: 40px 16px;
-    text-decoration: none;
-    color: var(--text);
+/* Tall wrapper gives scroll room for 3 projects */
+.work-sticky-wrapper {
     position: relative;
-    border-radius: 8px;
-    margin: 0 -16px;
-    transition: background 0.25s ease;
+    height: 320vh;
 }
 
-.project-link:hover {
-    background: var(--card-hover);
+/* Sticky panel that locks in place */
+.work-sticky-inner {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    overflow: hidden;
 }
 
-.project-link:hover .project-arrow {
-    transform: translateX(8px);
-    color: var(--text);
-}
-
-.project-link:hover .project-number {
-    color: var(--text);
-}
-
-.project-meta {
+/* ── Left panel ───────────────────────────── */
+.work-sticky-left {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    justify-content: space-between;
+    padding: 52px 40px;
+    border-right: 1px solid var(--border);
 }
 
-.project-number {
+.work-counter-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.work-counter-current {
     font-family: 'DM Serif Display', Georgia, serif;
-    font-size: 1.6rem;
-    color: var(--border);
+    font-size: 4.5rem;
     line-height: 1;
-    transition: color 0.25s ease;
+    letter-spacing: -0.03em;
+    color: var(--text);
+    transition: opacity 0.3s ease;
+}
+
+.work-counter-total {
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: 1rem;
+    color: var(--border);
+    letter-spacing: -0.01em;
+}
+
+.work-progress-track {
+    width: 2px;
+    height: 100px;
+    background: var(--border);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.work-progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 0%;
+    background: var(--text);
+    border-radius: 2px;
+}
+
+/* ── Right panel: slides ──────────────────── */
+.work-sticky-right {
+    position: relative;
+    overflow: hidden;
+}
+
+.work-slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    padding: 60px 72px;
+    opacity: 0;
+    transform: translateY(52px);
+    transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.work-slide.is-active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.work-slide.is-past {
+    opacity: 0;
+    transform: translateY(-52px);
+    transition-duration: 0.4s;
+}
+
+/* Ghost number watermark in background */
+.slide-bg-number {
+    position: absolute;
+    right: -0.08em;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'DM Serif Display', Georgia, serif;
+    font-size: clamp(180px, 32vw, 380px);
+    color: var(--border);
+    opacity: 0.5;
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+    letter-spacing: -0.05em;
+}
+
+.slide-content {
+    position: relative;
+    z-index: 1;
+    max-width: 580px;
 }
 
 .project-tag {
+    display: block;
     font-size: 0.68rem;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--text-muted);
     font-weight: 500;
-}
-
-.project-content {
-    min-width: 0;
+    margin-bottom: 20px;
 }
 
 .project-title {
     font-family: 'DM Serif Display', Georgia, serif;
-    font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+    font-size: clamp(2.4rem, 5vw, 4rem);
     font-weight: 400;
-    letter-spacing: -0.015em;
-    line-height: 1.2;
-    margin-bottom: 8px;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
     color: var(--text);
+    margin-bottom: 20px;
 }
 
 .project-desc {
+    font-size: 1.05rem;
     color: var(--text-muted);
-    font-size: 0.92rem;
     font-weight: 300;
-    line-height: 1.5;
+    line-height: 1.65;
+    margin-bottom: 36px;
 }
 
-.project-arrow {
-    font-size: 1.3rem;
-    color: var(--text-muted);
-    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1),
-                color 0.25s ease;
-    justify-self: end;
+.project-cta {
+    display: inline-block;
+    font-size: 0.9rem;
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    position: relative;
+}
+
+.project-cta::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 1.5px;
+    background: var(--accent);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.project-cta:hover::after {
+    transform: scaleX(0);
+    transform-origin: right;
 }
 
 /* ============================================================
@@ -523,9 +601,12 @@ body {
         gap: 48px;
     }
 
-    .project-link {
-        grid-template-columns: 140px 1fr 40px;
-        gap: 24px;
+    .work-sticky-inner {
+        grid-template-columns: 200px 1fr;
+    }
+
+    .work-slide {
+        padding: 48px 40px;
     }
 }
 
@@ -538,29 +619,51 @@ body {
         --pad-section: 64px;
     }
 
-    .nav {
-        padding: 0 20px;
+    /* Stack sticky panel vertically on mobile */
+    .work-sticky-inner {
+        grid-template-columns: 1fr;
+        grid-template-rows: 80px 1fr;
     }
 
-    .nav-links {
-        gap: 20px;
-    }
-
-    .project-link {
-        grid-template-columns: 1fr 36px;
-        gap: 16px;
-        padding: 28px 12px;
-    }
-
-    .project-meta {
-        grid-column: 1 / -1;
+    .work-sticky-left {
         flex-direction: row;
         align-items: center;
-        gap: 12px;
+        padding: 0 20px;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
     }
 
-    .project-number {
-        font-size: 1.2rem;
+    .work-counter-wrap {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 6px;
+    }
+
+    .work-counter-current {
+        font-size: 1.8rem;
+    }
+
+    .work-progress-track {
+        width: 60px;
+        height: 2px;
+        margin-left: auto;
+    }
+
+    .work-progress-fill {
+        height: 100% !important;
+        width: 0%;
+        transition: width 0.1s linear;
+    }
+
+    .work-slide {
+        padding: 32px 20px;
+        align-items: flex-start;
+        padding-top: 40px;
+    }
+
+    .slide-bg-number {
+        font-size: 55vw;
+        opacity: 0.25;
     }
 
     .about-inner {

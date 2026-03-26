@@ -29,53 +29,56 @@
 
         <!-- Work -->
         <section class="work" id="work" aria-label="Selected work">
-            <div class="section-header">
-                <span class="section-label">Selected Work</span>
-            </div>
-            <div class="projects">
+            <div class="work-sticky-wrapper">
+                <div class="work-sticky-inner">
 
-                <article class="project-card">
-                    <a href="projects/ai-automation.html" class="project-link">
-                        <div class="project-meta">
-                            <span class="project-number">01</span>
-                            <span class="project-tag">System Automation</span>
+                    <!-- Left panel: counter + progress -->
+                    <div class="work-sticky-left">
+                        <span class="section-label">Selected Work</span>
+                        <div class="work-counter-wrap">
+                            <span class="work-counter-current">01</span>
+                            <span class="work-counter-total">/ 03</span>
                         </div>
-                        <div class="project-content">
-                            <h2 class="project-title">AI Chatbot Automation Platform</h2>
-                            <p class="project-desc">Automating enterprise support workflows.</p>
+                        <div class="work-progress-track" aria-hidden="true">
+                            <div class="work-progress-fill"></div>
                         </div>
-                        <span class="project-arrow" aria-hidden="true">&#8594;</span>
-                    </a>
-                </article>
+                    </div>
 
-                <article class="project-card">
-                    <a href="projects/enterprise-tooling.html" class="project-link">
-                        <div class="project-meta">
-                            <span class="project-number">02</span>
-                            <span class="project-tag">Internal Tools</span>
-                        </div>
-                        <div class="project-content">
-                            <h2 class="project-title">Enterprise Tooling</h2>
-                            <p class="project-desc">Designing internal tools used by 100k employees.</p>
-                        </div>
-                        <span class="project-arrow" aria-hidden="true">&#8594;</span>
-                    </a>
-                </article>
+                    <!-- Right panel: slides -->
+                    <div class="work-sticky-right">
 
-                <article class="project-card">
-                    <a href="projects/coaching-platform.html" class="project-link">
-                        <div class="project-meta">
-                            <span class="project-number">03</span>
-                            <span class="project-tag">Employee Experience</span>
-                        </div>
-                        <div class="project-content">
-                            <h2 class="project-title">Coaching Platform</h2>
-                            <p class="project-desc">Simplifying performance management workflows.</p>
-                        </div>
-                        <span class="project-arrow" aria-hidden="true">&#8594;</span>
-                    </a>
-                </article>
+                        <article class="work-slide is-active" data-index="0">
+                            <div class="slide-bg-number" aria-hidden="true">01</div>
+                            <div class="slide-content">
+                                <span class="project-tag">System Automation</span>
+                                <h2 class="project-title">AI Chatbot Automation Platform</h2>
+                                <p class="project-desc">Automating enterprise support workflows.</p>
+                                <a href="projects/ai-automation.html" class="project-cta">View Case Study &#8594;</a>
+                            </div>
+                        </article>
 
+                        <article class="work-slide" data-index="1">
+                            <div class="slide-bg-number" aria-hidden="true">02</div>
+                            <div class="slide-content">
+                                <span class="project-tag">Internal Tools</span>
+                                <h2 class="project-title">Enterprise Tooling</h2>
+                                <p class="project-desc">Designing internal tools used by 100k employees.</p>
+                                <a href="projects/enterprise-tooling.html" class="project-cta">View Case Study &#8594;</a>
+                            </div>
+                        </article>
+
+                        <article class="work-slide" data-index="2">
+                            <div class="slide-bg-number" aria-hidden="true">03</div>
+                            <div class="slide-content">
+                                <span class="project-tag">Employee Experience</span>
+                                <h2 class="project-title">Coaching Platform</h2>
+                                <p class="project-desc">Simplifying performance management workflows.</p>
+                                <a href="projects/coaching-platform.html" class="project-cta">View Case Study &#8594;</a>
+                            </div>
+                        </article>
+
+                    </div>
+                </div>
             </div>
         </section>
 
