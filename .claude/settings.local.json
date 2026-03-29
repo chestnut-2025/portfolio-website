@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(open \"/Users/sunghyunahn/Desktop/Portfolio Website/index.html\")",
+      "WebFetch(domain:www.wallofportfolios.in)",
+      "WebFetch(domain:www.jordangilroy.com)",
+      "WebFetch(domain:www.ram.gd)",
+      "WebFetch(domain:i.pinimg.com)"
     ]
   }
 }

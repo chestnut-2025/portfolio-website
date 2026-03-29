@@ -7,23 +7,62 @@
     <title>Julie Ahn — Product Designer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script>
+        history.scrollRestoration = 'manual';
+        // Remove any hash from URL so the browser doesn't jump to an anchor
+        if (window.location.hash) {
+            history.replaceState(null, '', window.location.pathname);
+        }
+    </script>
 </head>
 <body>
 
     <!-- Custom Cursor -->
-    <div class="cursor" aria-hidden="true"></div>
+    <div class="cursor-inner" aria-hidden="true"></div>
+    <div class="cursor-outer" aria-hidden="true">
+        <span class="cursor-label"></span>
+    </div>
 
     <main>
 
         <!-- Hero -->
         <section class="hero" id="hero" aria-label="Introduction">
             <div class="hero-content">
-                <p class="hero-label">Sunghyun &#8220;Julie&#8221; Ahn</p>
-                <h1 class="hero-title">Professional remover<br>of unnecessary steps.</h1>
-                <p class="hero-sub">Designing tools that make complex systems feel simple.</p>
-                <span class="hero-role">Product Designer @ Apple</span>
+
+                <!-- Top row: name + location/time -->
+                <div class="hero-top-row">
+                    <p class="hero-label">Sunghyun &#8220;Julie&#8221; Ahn</p>
+                    <p class="hero-meta" aria-label="Your location and local time">
+                        <span class="hero-location" id="heroLocation"></span>
+                        <span class="hero-meta-sep" id="heroMetaSep" aria-hidden="true" style="display:none">&middot;</span>
+                        <span class="hero-time" id="heroTime" aria-live="off"></span>
+                    </p>
+                </div>
+
+                <!-- Eraser interaction -->
+                <div class="eraser-wrap">
+                    <div class="eraser-container" id="eraserContainer">
+                        <h1 class="hero-title" id="textOriginal">Professional remover of unnecessary steps.</h1>
+                        <h1 class="eraser-reveal" id="textReveal">Only what matters remains.</h1>
+                        <canvas id="eraserCanvas" aria-hidden="true"></canvas>
+                    </div>
+                    <p class="eraser-hint">Hover to remove the unnecessary</p>
+                </div>
+
+                <!-- Bottom row: sub + role -->
+                <div class="hero-bottom-row">
+                    <p class="hero-sub">Designing tools that make complex systems feel simple.</p>
+                    <span class="hero-role">Product Designer @ Apple</span>
+                </div>
+
+            </div>
+
+            <!-- Scroll indicator -->
+            <div class="hero-scroll" aria-hidden="true">
+                <span class="hero-scroll-label">scroll</span>
+                <div class="hero-scroll-line"></div>
             </div>
         </section>
 
@@ -48,7 +87,17 @@
                     <div class="work-sticky-right">
 
                         <article class="work-slide is-active" data-index="0">
-                            <div class="slide-bg-number" aria-hidden="true">01</div>
+                            <div class="slide-visual" aria-hidden="true">
+                                <div class="slide-visual-card">
+                                    <div class="svc-bar"></div>
+                                    <div class="svc-row"></div>
+                                    <div class="svc-row svc-row--short"></div>
+                                    <div class="svc-grid">
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="slide-content">
                                 <span class="project-tag">System Automation</span>
                                 <h2 class="project-title">AI Chatbot Automation Platform</h2>
@@ -58,7 +107,17 @@
                         </article>
 
                         <article class="work-slide" data-index="1">
-                            <div class="slide-bg-number" aria-hidden="true">02</div>
+                            <div class="slide-visual" aria-hidden="true">
+                                <div class="slide-visual-card">
+                                    <div class="svc-bar"></div>
+                                    <div class="svc-row"></div>
+                                    <div class="svc-row svc-row--short"></div>
+                                    <div class="svc-grid">
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="slide-content">
                                 <span class="project-tag">Internal Tools</span>
                                 <h2 class="project-title">Enterprise Tooling</h2>
@@ -68,7 +127,17 @@
                         </article>
 
                         <article class="work-slide" data-index="2">
-                            <div class="slide-bg-number" aria-hidden="true">03</div>
+                            <div class="slide-visual" aria-hidden="true">
+                                <div class="slide-visual-card">
+                                    <div class="svc-bar"></div>
+                                    <div class="svc-row"></div>
+                                    <div class="svc-row svc-row--short"></div>
+                                    <div class="svc-grid">
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                        <div class="svc-cell"></div><div class="svc-cell"></div><div class="svc-cell"></div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="slide-content">
                                 <span class="project-tag">Employee Experience</span>
                                 <h2 class="project-title">Coaching Platform</h2>
