@@ -3,91 +3,1145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot Automation Platform — Julie Ahn</title>
+    <meta name="description" content="ChatKit — AI Chatbot Automation Platform case study by Julie Ahn">
+    <title>ChatKit — Julie Ahn</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../styles.css">
+    <script src="../gate.js"></script>
+    <script>
+        (function () {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
+    </script>
     <style>
-        .case-stub {
-            min-height: 100vh;
+        /* ── Fixed UI ───────────────────────────────────────────── */
+        .cs-back {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            z-index: 200;
+            height: 36px;
+            padding: 0 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 400;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.02em;
+            cursor: none;
+            transition: color 0.2s ease, border-color 0.2s ease, background-color 0.3s ease;
+        }
+        .cs-back:hover {
+            color: var(--text);
+            border-color: var(--text-muted);
+        }
+
+        /* ── Simplify floating button ───────────────────────────── */
+        @keyframes cs-fade-up {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes cs-pulse-border {
+            0%, 100% {
+                border-color: rgba(242, 170, 191, 0.4);
+                box-shadow: 0 0 0 0 rgba(242, 170, 191, 0);
+            }
+            50% {
+                border-color: rgba(242, 170, 191, 1);
+                box-shadow: 0 0 0 4px rgba(242, 170, 191, 0.12);
+            }
+        }
+
+        .cs-simplify-wrap {
+            padding: 28px 0 0;
+            opacity: 0;
+            animation: cs-fade-up 0.5s ease 0.6s forwards;
+        }
+        .cs-simplify {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            height: 44px;
+            padding: 0 20px;
+            border-radius: 100px;
+            border: 1px solid rgba(242, 170, 191, 0.4);
+            background: rgba(242, 170, 191, 0.06);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: 0.01em;
+            cursor: none;
+            animation: cs-pulse-border 3s ease-in-out infinite;
+            transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .cs-simplify:hover {
+            background: rgba(242, 170, 191, 0.13);
+            border-color: rgba(242, 170, 191, 1);
+            box-shadow: 0 0 0 4px rgba(242, 170, 191, 0.12);
+            animation: none;
+        }
+        .cs-simplify-label-muted {
+            color: var(--text-muted);
+        }
+        .cs-simplify-arrow {
+            font-size: 0.8rem;
+            color: #F2AABF;
+            transition: transform 0.2s ease;
+        }
+        .cs-simplify:hover .cs-simplify-arrow { transform: translateX(3px); }
+
+        /* ── Compact fixed fallback ──────────────────────────────── */
+        .cs-simplify-fixed {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            z-index: 200;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 100px;
+            border: 1px solid rgba(242, 170, 191, 0.4);
+            background: var(--bg);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 400;
+            color: var(--text);
+            letter-spacing: 0.01em;
+            cursor: none;
+            opacity: 0;
+            transform: translateY(8px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            animation: cs-pulse-border 3s ease-in-out infinite;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+        }
+        [data-theme="dark"] .cs-simplify-fixed {
+            box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+        }
+        .cs-simplify-fixed.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        .cs-simplify-fixed:hover {
+            background: rgba(242, 170, 191, 0.1);
+            border-color: rgba(242, 170, 191, 1);
+            box-shadow: 0 0 0 4px rgba(242, 170, 191, 0.12);
+            animation: none;
+        }
+        .cs-simplify-fixed .cs-simplify-arrow {
+            font-size: 0.78rem;
+            color: #F2AABF;
+            transition: transform 0.2s ease;
+        }
+        .cs-simplify-fixed:hover .cs-simplify-arrow { transform: translateX(3px); }
+
+        /* ── Summary backdrop ───────────────────────────────────── */
+        .cs-summary-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 300;
+            background: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+            transition: background 0.3s ease, backdrop-filter 0.3s ease, -webkit-backdrop-filter 0.3s ease;
+            overflow-y: auto;
+            padding: 60px 24px 60px;
             display: flex;
-            flex-direction: column;
             align-items: flex-start;
             justify-content: center;
+        }
+        .cs-summary-overlay { display: none; }
+        .cs-summary-overlay.is-visible { display: flex; }
+        .cs-summary-overlay.is-animating {
+            background: rgba(200, 195, 185, 0.25);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        [data-theme="dark"] .cs-summary-overlay.is-animating {
+            background: rgba(10, 10, 8, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        /* ── The note card ───────────────────────────────────────── */
+        .cs-summary-card {
+            width: 100%;
+            max-width: 620px;
+            background: #FEFCF7;
+            border-radius: 4px;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
+            padding: 48px 48px 44px;
+            position: relative;
+            transform: translateY(12px) rotate(0.4deg);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            margin-top: 40px;
+        }
+        .cs-summary-overlay.is-animating .cs-summary-card {
+            transform: translateY(0) rotate(0.4deg);
+            opacity: 1;
+        }
+        [data-theme="dark"] .cs-summary-card {
+            background: #1F1F1A;
+            box-shadow: 0 8px 48px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
+        }
+        /* Tape strip at top */
+        .cs-summary-card::before {
+            content: '';
+            position: absolute;
+            top: -14px;
+            left: 50%;
+            transform: translateX(-50%) rotate(-1deg);
+            width: 72px;
+            height: 26px;
+            background: rgba(200, 195, 175, 0.55);
+            border-radius: 2px;
+        }
+        [data-theme="dark"] .cs-summary-card::before {
+            background: rgba(120, 115, 95, 0.45);
+        }
+
+        .cs-summary-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+        .cs-summary-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .cs-summary-close {
+            height: 30px;
+            padding: 0 12px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 400;
+            cursor: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.02em;
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+        .cs-summary-close:hover { color: var(--text); border-color: var(--text-muted); }
+
+        .cs-summary-title {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.05;
+            color: var(--text);
+            margin: 0 0 4px;
+        }
+        .cs-summary-sub {
+            font-size: 0.92rem;
+            font-weight: 300;
+            color: var(--text-muted);
+            margin: 0 0 28px;
+        }
+        .cs-summary-meta {
+            display: flex;
+            gap: 28px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+            padding-bottom: 28px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-summary-meta-item { display: flex; flex-direction: column; gap: 4px; }
+        .cs-summary-meta-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .cs-summary-meta-value {
+            font-size: 0.88rem;
+            color: var(--text);
+            font-weight: 400;
+        }
+        .cs-summary-block {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 16px 28px;
+            margin-bottom: 20px;
+            align-items: start;
+        }
+        .cs-summary-block-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding-top: 3px;
+        }
+        .cs-summary-block-body {
+            font-size: 0.9rem;
+            color: var(--text);
+            font-weight: 300;
+            line-height: 1.7;
+            margin: 0;
+        }
+        .cs-summary-block-body strong { font-weight: 500; }
+        .cs-summary-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cs-summary-pill {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 3px 10px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        .cs-summary-divider {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 24px 0;
+        }
+        .cs-summary-cta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+        .cs-summary-cta p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin: 0;
+        }
+        .cs-summary-expand {
+            height: 32px;
+            padding: 0 14px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 400;
+            cursor: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            letter-spacing: 0.02em;
+            transition: border-color 0.2s ease;
+        }
+        .cs-summary-expand:hover { border-color: var(--text); }
+
+        @media (max-width: 600px) {
+            .cs-summary-card { padding: 36px 28px 32px; margin-top: 56px; }
+            .cs-summary-block { grid-template-columns: 1fr; gap: 6px 0; margin-bottom: 20px; }
+        }
+
+        /* ── Main wrapper ───────────────────────────────────────── */
+        .cs-main {
             max-width: var(--max-width);
             margin: 0 auto;
-            padding: var(--nav-height) var(--pad-x) 80px;
+            padding: 0 var(--pad-x);
         }
-        .stub-tag {
+
+        /* ── Hero ───────────────────────────────────────────────── */
+        .cs-hero {
+            padding: 160px 0 80px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-tag {
+            display: block;
             font-size: 0.7rem;
             letter-spacing: 0.14em;
             text-transform: uppercase;
             color: var(--text-muted);
             font-weight: 500;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
         }
-        .stub-title {
+        .cs-title {
             font-family: 'Inter', sans-serif;
-            font-size: clamp(2.4rem, 5vw, 4rem);
-            letter-spacing: -0.02em;
-            line-height: 1.1;
-            margin-bottom: 20px;
+            font-size: clamp(3.8rem, 9vw, 7.5rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.0;
+            color: var(--text);
+            margin-bottom: 40px;
         }
-        .stub-desc {
-            font-size: 1.05rem;
+        .cs-hero-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 48px;
+            max-width: 800px;
+        }
+        .cs-subtitle {
+            font-size: 1.25rem;
+            font-weight: 300;
+            color: var(--text);
+            line-height: 1.5;
+            margin: 0;
+        }
+        .cs-hero-desc {
+            font-size: 0.98rem;
             color: var(--text-muted);
             font-weight: 300;
-            margin-bottom: 48px;
-            max-width: 480px;
-            line-height: 1.65;
+            line-height: 1.8;
+            margin: 0;
         }
-        .stub-badge {
-            display: inline-block;
-            padding: 8px 18px;
-            background: var(--accent);
-            color: var(--text);
-            font-size: 0.82rem;
-            font-weight: 500;
-            border-radius: 100px;
-            margin-bottom: 48px;
-            letter-spacing: 0.02em;
+
+        /* ── Quick Facts ────────────────────────────────────────── */
+        .cs-facts {
+            padding: 44px 0;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            gap: 64px;
+            flex-wrap: wrap;
         }
-        .back-link {
-            font-size: 0.88rem;
-            color: var(--text-muted);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
+        .cs-fact {
+            display: flex;
+            flex-direction: column;
             gap: 8px;
-            transition: color 0.2s ease;
         }
-        .back-link:hover { color: var(--text); }
+        .cs-fact-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .cs-fact-value {
+            font-size: 0.92rem;
+            color: var(--text);
+            font-weight: 400;
+            max-width: 300px;
+            line-height: 1.55;
+        }
+
+        /* ── Hero image ─────────────────────────────────────────── */
+        .cs-hero-img-wrap {
+            margin: 64px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 48px rgba(0,0,0,0.10);
+        }
+        .cs-hero-img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        [data-theme="dark"] .cs-hero-img-wrap {
+            box-shadow: 0 4px 48px rgba(0,0,0,0.45);
+        }
+
+        /* ── Mockup placeholders ────────────────────────────────── */
+        .cs-mockup {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background: var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .cs-mockup--hero {
+            aspect-ratio: 21 / 9;
+            margin: 64px 0;
+        }
+        .cs-mockup-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        /* ── Sections ───────────────────────────────────────────── */
+        .cs-section {
+            padding: 80px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-section-inner {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 80px;
+            align-items: start;
+        }
+        .cs-section-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding-top: 4px;
+            position: sticky;
+            top: 80px;
+        }
+        .cs-section-body {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+        .cs-section-title {
+            font-size: clamp(1.6rem, 3vw, 2.2rem);
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            color: var(--text);
+            margin: 0;
+        }
+        .cs-lead {
+            font-size: 1.15rem;
+            font-weight: 300;
+            color: var(--text);
+            line-height: 1.7;
+            margin: 0;
+        }
+        .cs-body {
+            font-size: 0.98rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.85;
+            margin: 0;
+        }
+
+        /* ── Challenges card ────────────────────────────────────── */
+        .cs-challenges {
+            padding: 28px 32px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .cs-challenges-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .cs-challenge-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .cs-challenge-list li {
+            font-size: 0.95rem;
+            color: var(--text);
+            font-weight: 300;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+        .cs-challenge-list li::before {
+            content: '—';
+            color: var(--text-muted);
+            flex-shrink: 0;
+            opacity: 0.5;
+        }
+
+        /* ── System flow diagram ────────────────────────────────── */
+        .cs-flow {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0;
+            row-gap: 12px;
+            padding: 12px 0 4px;
+        }
+        .cs-flow-step {
+            padding: 9px 16px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text);
+            font-weight: 400;
+            white-space: nowrap;
+            background: var(--bg);
+            letter-spacing: 0.01em;
+        }
+        .cs-flow-step--accent {
+            background: var(--accent);
+            border-color: transparent;
+            font-weight: 500;
+        }
+        [data-theme="dark"] .cs-flow-step--accent {
+            background: var(--text);
+            color: var(--bg);
+            border-color: transparent;
+        }
+        .cs-flow-arrow {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            padding: 0 10px;
+            opacity: 0.5;
+        }
+        .cs-caption {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.65;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* ── Product features ───────────────────────────────────── */
+        .cs-feature {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 52px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-feature:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .cs-feature + .cs-feature { margin-top: 52px; }
+        .cs-feature-header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+        }
+        .cs-feature-num {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            font-weight: 400;
+        }
+        .cs-feature-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin: 0;
+        }
+
+        /* ── Feature images ─────────────────────────────────────── */
+        .cs-feature-img-wrap {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 32px rgba(0,0,0,0.09);
+            background: var(--border);
+        }
+        .cs-feature-img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+        [data-theme="dark"] .cs-feature-img-wrap {
+            box-shadow: 0 2px 32px rgba(0,0,0,0.40);
+        }
+
+        /* ── Impact grid ────────────────────────────────────────── */
+        .cs-impact-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .cs-impact-item {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 28px 24px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+        .cs-impact-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text);
+        }
+        .cs-impact-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* ── Design decisions ───────────────────────────────────── */
+        .cs-decision {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 40px;
+            border-bottom: 1px solid var(--border);
+        }
+        .cs-decision:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .cs-decision + .cs-decision { margin-top: 40px; }
+        .cs-decision-header {
+            display: flex;
+            align-items: baseline;
+            gap: 14px;
+        }
+        .cs-decision-num {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            font-weight: 400;
+        }
+        .cs-decision-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--text);
+            margin: 0;
+        }
+
+        /* ── Closing ────────────────────────────────────────────── */
+        .cs-closing {
+            padding: 120px 0;
+            text-align: center;
+        }
+        .cs-closing p {
+            font-size: clamp(1.4rem, 3vw, 2rem);
+            font-weight: 300;
+            color: var(--text);
+            line-height: 1.55;
+            max-width: 620px;
+            margin: 0 auto;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── Responsive ─────────────────────────────────────────── */
+        @media (max-width: 900px) {
+            .cs-section-inner {
+                grid-template-columns: 160px 1fr;
+                gap: 48px;
+            }
+            .cs-impact-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 600px) {
+            .cs-hero { padding: 120px 0 60px; }
+            .cs-hero-meta { grid-template-columns: 1fr; gap: 20px; }
+            .cs-section-inner { grid-template-columns: 1fr; gap: 20px; }
+            .cs-section-label { position: static; }
+            .cs-facts { gap: 32px; }
+            .cs-impact-grid { grid-template-columns: 1fr; }
+            .cs-flow { gap: 0; row-gap: 8px; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="cursor" aria-hidden="true"></div>
+    <!-- Back button -->
+    <a href="../index.html" class="cs-back" aria-label="Back to all work">
+        &#8592; Back
+    </a>
 
-    <nav class="nav" aria-label="Main navigation">
-        <a href="../index.html" class="nav-logo">Julie Ahn</a>
-        <ul class="nav-links" role="list">
-            <li><a href="../index.html#work">Work</a></li>
-            <li><a href="../index.html#about">About</a></li>
-            <li><a href="../index.html#contact">Contact</a></li>
-        </ul>
-    </nav>
 
-    <main>
-        <div class="case-stub">
-            <p class="stub-tag">System Automation &mdash; 01</p>
-            <h1 class="stub-title">AI Chatbot Automation Platform</h1>
-            <p class="stub-desc">Automating enterprise support workflows. Case study coming soon.</p>
-            <span class="stub-badge">Case study in progress &#8594;</span>
-            <a href="../index.html" class="back-link">&#8592; Back to all work</a>
+    <!-- Compact fixed fallback (appears when inline button is off-screen) -->
+    <button class="cs-simplify-fixed" id="csSimplifyFixed" aria-label="View quick summary">
+        Short on time?
+        <span class="cs-simplify-arrow" aria-hidden="true">&#8594;</span>
+    </button>
+
+    <!-- Summary overlay -->
+    <div class="cs-summary-overlay" id="csSummary" role="dialog" aria-modal="true" aria-label="Case study summary">
+        <div class="cs-summary-card">
+        <div class="cs-summary-inner">
+
+            <div class="cs-summary-top">
+                <span class="cs-summary-label">TL;DR</span>
+                <button class="cs-summary-close" id="csSummaryClose">
+                    Read full case study &#8594;
+                </button>
+            </div>
+
+            <h2 class="cs-summary-title">ChatKit</h2>
+            <p class="cs-summary-sub">AI Chatbot Automation Platform</p>
+
+            <div class="cs-summary-meta">
+                <div class="cs-summary-meta-item">
+                    <span class="cs-summary-meta-label">Role</span>
+                    <span class="cs-summary-meta-value">Product Designer</span>
+                </div>
+                <div class="cs-summary-meta-item">
+                    <span class="cs-summary-meta-label">Timeline</span>
+                    <span class="cs-summary-meta-value">2023 &mdash; 2025</span>
+                </div>
+                <div class="cs-summary-meta-item">
+                    <span class="cs-summary-meta-label">Scope</span>
+                    <span class="cs-summary-meta-value">End-to-end product design</span>
+                </div>
+            </div>
+
+            <hr class="cs-summary-divider">
+
+            <div class="cs-summary-block">
+                <span class="cs-summary-block-label">The Problem</span>
+                <p class="cs-summary-block-body">Non-technical teams couldn&rsquo;t build chatbots without engineering help. The platform was powerful, but the barrier was the interface&mdash;most users either avoided it or escalated before they even started.</p>
+            </div>
+
+            <div class="cs-summary-block">
+                <span class="cs-summary-block-label">The Insight</span>
+                <p class="cs-summary-block-body">Users didn&rsquo;t need to <em>build</em> a chatbot&mdash;they needed to <strong>edit</strong> one. Shifting from a blank canvas to an AI-generated draft changed the question from &ldquo;how do I start?&rdquo; to &ldquo;does this look right?&rdquo;</p>
+            </div>
+
+            <div class="cs-summary-block">
+                <span class="cs-summary-block-label">What I Did</span>
+                <div>
+                    <div class="cs-summary-pills">
+                        <span class="cs-summary-pill">Guided onboarding flow</span>
+                        <span class="cs-summary-pill">AI-assisted conversation builder</span>
+                        <span class="cs-summary-pill">Transparent knowledge management</span>
+                        <span class="cs-summary-pill">In-product testing &amp; validation</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="cs-summary-block">
+                <span class="cs-summary-block-label">The Outcome</span>
+                <p class="cs-summary-block-body">&ldquo;I don&rsquo;t know where to begin&rdquo; became &ldquo;I can try this and refine it.&rdquo; Non-technical teams could ship chatbots independently&mdash;without waiting on engineering.</p>
+            </div>
+
+            <div class="cs-summary-cta">
+                <p>Want the details behind the decisions?</p>
+                <button class="cs-summary-expand" id="csSummaryExpand">
+                    Full case study &#8595;
+                </button>
+            </div>
+
+        </div><!-- /cs-summary-inner -->
+        </div><!-- /cs-summary-card -->
+    </div><!-- /cs-summary-overlay -->
+
+    <!-- Theme toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6.5 6.5 0 1 0 8 8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="8" y1="1" x2="8" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="8" y1="13.5" x2="8" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="1" y1="8" x2="2.5" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="13.5" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="3.05" y1="3.05" x2="4.1" y2="4.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.9" y1="11.9" x2="12.95" y2="12.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.9" y1="4.1" x2="12.95" y2="3.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="3.05" y1="12.95" x2="4.1" y2="11.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </button>
+
+    <!-- Custom cursor -->
+    <div class="cursor-inner" aria-hidden="true"></div>
+    <div class="cursor-outer" aria-hidden="true">
+        <span class="cursor-label"></span>
+    </div>
+
+    <main class="cs-main">
+
+        <!-- ── Hero ─────────────────────────────────────────────── -->
+        <section class="cs-hero" aria-label="Project introduction">
+            <span class="cs-tag">System Automation &mdash; 01</span>
+            <h1 class="cs-title">ChatKit</h1>
+            <div class="cs-hero-meta">
+                <p class="cs-subtitle">Designing an AI chatbot builder for non-technical teams.</p>
+                <p class="cs-hero-desc">A hybrid system that combines generative AI, structured flows, and knowledge-based responses to simplify chatbot creation at scale.</p>
+            </div>
+        </section>
+
+        <!-- ── Quick Facts ───────────────────────────────────────── -->
+        <div class="cs-facts" role="list" aria-label="Project details">
+            <div class="cs-fact" role="listitem">
+                <span class="cs-fact-label">Role</span>
+                <span class="cs-fact-value">Product Designer</span>
+            </div>
+            <div class="cs-fact" role="listitem">
+                <span class="cs-fact-label">Timeline</span>
+                <span class="cs-fact-value">2023 &mdash; 2025</span>
+            </div>
+            <div class="cs-fact" role="listitem">
+                <span class="cs-fact-label">Scope</span>
+                <span class="cs-fact-value">Onboarding, conversation builder, knowledge management, testing, and deployment</span>
+            </div>
         </div>
+
+        <!-- ── Simplify ─────────────────────────────────────────── -->
+        <div class="cs-simplify-wrap">
+            <button class="cs-simplify" id="csSimplify" aria-label="View quick summary">
+                <span class="cs-simplify-label-muted">Short on time?</span>
+                View the summary
+                <span class="cs-simplify-arrow" aria-hidden="true">&#8594;</span>
+            </button>
+        </div>
+
+        <!-- ── Hero mockup ───────────────────────────────────────── -->
+        <div class="cs-hero-img-wrap">
+            <img src="images/chatkit-hero.png" alt="ChatKit conversation builder interface showing AI agent panel, custom flows, and knowledge management" class="cs-hero-img">
+        </div>
+
+        <!-- ── The Problem ──────────────────────────────────────── -->
+        <section class="cs-section" aria-label="The problem">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">The Problem</span>
+                <div class="cs-section-body">
+                    <p class="cs-lead">The existing chatbot platform was powerful&mdash;but the people who needed it most couldn&rsquo;t use it on their own.</p>
+                    <p class="cs-body">Non-technical teams&mdash;the ones closest to the customer problems the chatbots were meant to solve&mdash;would either avoid the tool entirely or pull in a developer to do it for them. The barrier wasn&rsquo;t capability. It was the interface. Everything assumed a certain level of technical fluency that most users simply didn&rsquo;t have.</p>
+                    <p class="cs-body">The result was a bottleneck. Teams waited on engineers for tasks they should have been able to handle themselves. And even when they did get access, there was no real way to know if what they built would actually work&mdash;until it didn&rsquo;t.</p>
+                    <div class="cs-challenges">
+                        <span class="cs-challenges-label">Key challenges</span>
+                        <ul class="cs-challenge-list">
+                            <li>Non-technical users had no clear entry point&mdash;most gave up or escalated before starting</li>
+                            <li>Conversation logic was exposed as raw structure, not guided behavior</li>
+                            <li>Knowledge management was disconnected from the builder, making it hard to trust AI responses</li>
+                            <li>No way to test and validate before going live&mdash;errors only surfaced in production</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── The Solution ─────────────────────────────────────── -->
+        <section class="cs-section" aria-label="The solution">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">The Solution</span>
+                <div class="cs-section-body">
+                    <h2 class="cs-section-title">From builder to editor</h2>
+                    <p class="cs-lead">The core shift wasn&rsquo;t adding features&mdash;it was changing the mental model.</p>
+                    <p class="cs-body">Users didn&rsquo;t need to build a chatbot from scratch. They needed to shape one. ChatKit reframes the experience around editing, reviewing, and refining&mdash;not constructing from zero. AI generates a starting point; the user&rsquo;s job is to make it theirs.</p>
+                    <p class="cs-body">This shift from &ldquo;builder&rdquo; to &ldquo;editor&rdquo; lowered the activation energy dramatically. Instead of staring at an empty canvas and wondering where to begin, users arrive at something already in motion. The question changes from &ldquo;how do I build this?&rdquo; to &ldquo;does this look right?&rdquo;&mdash;a question anyone can answer.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Design Decisions ─────────────────────────────────── -->
+        <section class="cs-section" aria-label="Design decisions">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">Design Decisions</span>
+                <div class="cs-section-body">
+                    <p class="cs-lead">Three decisions shaped the whole product.</p>
+
+                    <div class="cs-decision">
+                        <div class="cs-decision-header">
+                            <span class="cs-decision-num">01</span>
+                            <h3 class="cs-decision-title">Automation vs. control</h3>
+                        </div>
+                        <p class="cs-body">The instinct was to automate as much as possible. But full automation would have made users feel like passengers in their own chatbot. The design question became: where does AI reduce friction, and where does it create anxiety? We landed on a model where AI handles the tedious&mdash;drafting responses, suggesting flows&mdash;but the user always makes the final call. Nothing goes live without explicit confirmation.</p>
+                    </div>
+
+                    <div class="cs-decision">
+                        <div class="cs-decision-header">
+                            <span class="cs-decision-num">02</span>
+                            <h3 class="cs-decision-title">Guided onboarding as a first principle</h3>
+                        </div>
+                        <p class="cs-body">Early designs dumped users into the builder and expected them to figure it out. That didn&rsquo;t work. We moved setup to the front&mdash;before you can build anything, you define the bot&rsquo;s purpose, tone, and scope. This felt like overhead at first, but it gave users a mental anchor. Every subsequent decision in the builder had context. &ldquo;Does this fit what I said this bot was for?&rdquo; was now a question users could actually ask themselves.</p>
+                    </div>
+
+                    <div class="cs-decision">
+                        <div class="cs-decision-header">
+                            <span class="cs-decision-num">03</span>
+                            <h3 class="cs-decision-title">Knowledge as a first-class surface</h3>
+                        </div>
+                        <p class="cs-body">AI responses are only as trustworthy as the knowledge behind them. Previous designs treated the knowledge base as a behind-the-scenes detail. We surfaced it. Users could see exactly what sources the bot was drawing from, add or remove content directly, and watch responses change as they did. This transparency was key to building confidence&mdash;not just in the tool, but in the chatbot itself.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── System Overview ──────────────────────────────────── -->
+        <section class="cs-section" aria-label="System overview">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">System Overview</span>
+                <div class="cs-section-body">
+                    <p class="cs-body">ChatKit connects knowledge, logic, and AI-driven responses into a single system.</p>
+                    <div class="cs-flow" role="img" aria-label="System flow: Knowledge Sources to Knowledge Hub to Conversation Engine to AI Response to Customer Interaction">
+                        <div class="cs-flow-step">Knowledge Sources</div>
+                        <div class="cs-flow-arrow" aria-hidden="true">&#8594;</div>
+                        <div class="cs-flow-step">Knowledge Hub</div>
+                        <div class="cs-flow-arrow" aria-hidden="true">&#8594;</div>
+                        <div class="cs-flow-step">Conversation Engine</div>
+                        <div class="cs-flow-arrow" aria-hidden="true">&#8594;</div>
+                        <div class="cs-flow-step">AI Response</div>
+                        <div class="cs-flow-arrow" aria-hidden="true">&#8594;</div>
+                        <div class="cs-flow-step cs-flow-step--accent">Customer Interaction</div>
+                    </div>
+                    <p class="cs-caption">This hybrid model balances flexibility with structure, enabling predictable and scalable chatbot behavior.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Product Experience ────────────────────────────────── -->
+        <section class="cs-section" aria-label="Product experience">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">Product Experience</span>
+                <div class="cs-section-body">
+
+                    <div class="cs-feature">
+                        <div class="cs-feature-header">
+                            <span class="cs-feature-num">01</span>
+                            <h3 class="cs-feature-title">Bot Setup</h3>
+                        </div>
+                        <p class="cs-body">Before anything gets built, users define what the bot is for. A short guided setup asks about purpose, tone, and the audience it&rsquo;ll serve. It feels like a brief rather than a form&mdash;and it gives every subsequent decision a foundation to stand on. For many users, this is the first time the problem has felt approachable.</p>
+                        <div class="cs-feature-img-wrap">
+                            <video class="cs-feature-img" autoplay loop muted playsinline aria-label="Bot setup flow animation">
+                                <source src="images/chatkit-botsetup.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                    </div>
+
+                    <div class="cs-feature">
+                        <div class="cs-feature-header">
+                            <span class="cs-feature-num">02</span>
+                            <h3 class="cs-feature-title">Conversation Builder</h3>
+                        </div>
+                        <p class="cs-body">The builder generates a draft conversation flow based on the setup brief. Users arrive at something that already works&mdash;and then shape it. They can adjust the flow, swap in structured responses where predictability matters, or let AI handle open-ended questions. The experience is closer to editing a document than writing one from scratch.</p>
+                        <div class="cs-mockup" aria-hidden="true">
+                            <span class="cs-mockup-label">Conversation Builder Mockup</span>
+                        </div>
+                    </div>
+
+                    <div class="cs-feature">
+                        <div class="cs-feature-header">
+                            <span class="cs-feature-num">03</span>
+                            <h3 class="cs-feature-title">Testing &amp; Knowledge</h3>
+                        </div>
+                        <p class="cs-body">Users can simulate conversations before anything goes live&mdash;asking the bot questions, checking how it responds, and tracing answers back to their source in the knowledge hub. This loop between testing and editing is where trust gets built. Not trust in AI, but trust in the specific chatbot they just made.</p>
+                        <div class="cs-mockup" aria-hidden="true">
+                            <span class="cs-mockup-label">Testing &amp; Knowledge Mockup</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Impact ────────────────────────────────────────────── -->
+        <section class="cs-section" aria-label="Impact">
+            <div class="cs-section-inner">
+                <span class="cs-section-label">Impact</span>
+                <div class="cs-section-body">
+                    <p class="cs-lead">The shift that mattered most wasn&rsquo;t efficiency&mdash;it was confidence.</p>
+                    <p class="cs-body">Users who used to say &ldquo;I don&rsquo;t know where to begin&rdquo; were now saying &ldquo;I can try this and refine it.&rdquo; That change in posture&mdash;from avoidance to agency&mdash;was the real outcome of the design.</p>
+                    <div class="cs-impact-grid">
+                        <div class="cs-impact-item">
+                            <span class="cs-impact-label">Confidence</span>
+                            <p class="cs-impact-desc">Non-technical users could attempt, iterate, and ship chatbots without engineering support&mdash;many for the first time</p>
+                        </div>
+                        <div class="cs-impact-item">
+                            <span class="cs-impact-label">Speed</span>
+                            <p class="cs-impact-desc">Setup time dropped significantly; teams that previously waited on developers could move independently</p>
+                        </div>
+                        <div class="cs-impact-item">
+                            <span class="cs-impact-label">Trust</span>
+                            <p class="cs-impact-desc">Integrated testing and transparent knowledge sourcing gave users a way to verify behavior before it reached customers</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Closing ───────────────────────────────────────────── -->
+        <section class="cs-closing" aria-label="Closing thought">
+            <p>The best outcome wasn&rsquo;t that the tool was easier. It was that people stopped assuming they couldn&rsquo;t do it.</p>
+        </section>
+
     </main>
 
     <script src="../script.js"></script>
+    <script>
+        (function () {
+            var btn = document.getElementById('csSimplify');
+            var overlay = document.getElementById('csSummary');
+            var card = overlay.querySelector('.cs-summary-card');
+            var closeBtn = document.getElementById('csSummaryClose');
+            var expandBtn = document.getElementById('csSummaryExpand');
+
+            function openSummary() {
+                overlay.classList.add('is-visible');
+                overlay.scrollTop = 0;
+                requestAnimationFrame(function () {
+                    requestAnimationFrame(function () {
+                        overlay.classList.add('is-animating');
+                    });
+                });
+                btn.innerHTML = 'Back to full case study <span class="cs-simplify-arrow" aria-hidden="true">&#8592;</span>';
+                btn.style.animation = 'none';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeSummary() {
+                overlay.classList.remove('is-animating');
+                overlay.addEventListener('transitionend', function handler() {
+                    overlay.classList.remove('is-visible');
+                    overlay.removeEventListener('transitionend', handler);
+                }, { once: true });
+                btn.innerHTML = '<span class="cs-simplify-label-muted">Short on time?</span> View the summary <span class="cs-simplify-arrow" aria-hidden="true">&#8594;</span>';
+                btn.style.animation = 'cs-pulse-border 3s ease-in-out infinite';
+                document.body.style.overflow = '';
+            }
+
+            btn.addEventListener('click', function () {
+                overlay.classList.contains('is-visible') ? closeSummary() : openSummary();
+            });
+
+            // Click backdrop (not the card) to close
+            overlay.addEventListener('click', function (e) {
+                if (!card.contains(e.target)) closeSummary();
+            });
+
+            closeBtn.addEventListener('click', closeSummary);
+            expandBtn.addEventListener('click', closeSummary);
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && overlay.classList.contains('is-visible')) closeSummary();
+            });
+
+            // Show compact fixed button when inline one is off-screen
+            var fixedBtn = document.getElementById('csSimplifyFixed');
+            fixedBtn.addEventListener('click', function () {
+                overlay.classList.contains('is-visible') ? closeSummary() : openSummary();
+            });
+
+            var observer = new IntersectionObserver(function (entries) {
+                fixedBtn.classList.toggle('is-visible', !entries[0].isIntersecting);
+            }, { threshold: 0.5 });
+            observer.observe(btn);
+
+        })();
+    </script>
 </body>
 </html>

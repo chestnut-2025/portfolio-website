@@ -89,16 +89,16 @@ document.addEventListener('DOMContentLoaded', function () {
         outer.style.opacity = '';
     });
 
-    // ── Hover: project CTAs ───────────────────────────────────
-    document.querySelectorAll('.project-cta').forEach(el => {
+    // ── Hover: right work panel + project CTAs ───────────────
+    document.querySelectorAll('.work-sticky-right, .project-cta').forEach(el => {
         el.addEventListener('mouseenter', () => {
-            inner.classList.add('is-hovering', 'is-view');
-            outer.classList.add('is-hovering', 'is-view');
-            if (label) label.textContent = 'View';
+            inner.classList.add('is-view');
+            outer.classList.add('is-view');
+            if (label) label.textContent = 'View Project';
         });
         el.addEventListener('mouseleave', () => {
-            inner.classList.remove('is-hovering', 'is-view');
-            outer.classList.remove('is-hovering', 'is-view');
+            inner.classList.remove('is-view');
+            outer.classList.remove('is-view');
             if (label) label.textContent = '';
         });
     });
@@ -161,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function () {
     var hintGone = false;
     var wasOver  = false;
     var RADIUS   = 52;
-    var BG       = '#FAFAF8';
 
     // Coverage tracking
     var COLS      = 12;
@@ -188,6 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function initCanvas() {
+        var BG  = (getComputedStyle(document.documentElement).getPropertyValue('--bg') || '#FAFAF8').trim();
         var w   = orig.offsetWidth;
         var h   = orig.offsetHeight;
         if (!w || !h) { setTimeout(initCanvas, 50); return; }
@@ -244,6 +244,13 @@ document.addEventListener('DOMContentLoaded', function () {
         initCanvas();
     });
 
+    document.addEventListener('themechange', function () {
+        if (done) return;
+        orig.style.visibility = 'visible';
+        covered.clear();
+        initCanvas();
+    });
+
     document.addEventListener('mousemove', function (e) {
         if (done) return;
 
@@ -293,7 +300,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         setTimeout(function () {
             canvas.style.display = 'none';
-            if (hint) hint.style.opacity = '0';
+            if (hint) {
+                hint.style.opacity  = '0';
+                setTimeout(function () {
+                    hint.textContent    = 'the unnecessary has been removed';
+                    hint.style.opacity  = '1';
+                }, 200);
+            }
         }, 500);
     }
 })();
@@ -345,6 +358,37 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('scroll', update, { passive: true });
     window.addEventListener('resize', update, { passive: true });
     update();
+
+    // ── Right panel: soft cursor glow + click-through ────────
+    const right = document.querySelector('.work-sticky-right');
+    if (!right) return;
+
+    const glowColors = [
+        'rgba(255, 253, 116, 0.22)',
+        'rgba(181, 201, 232, 0.22)',
+        'rgba(232, 181, 201, 0.22)',
+    ];
+
+    right.addEventListener('mouseenter', () => right.classList.add('is-hovered'));
+    right.addEventListener('mouseleave', () => right.classList.remove('is-hovered'));
+
+    right.addEventListener('mousemove', (e) => {
+        const rect = right.getBoundingClientRect();
+        right.style.setProperty('--cx', ((e.clientX - rect.left) / rect.width  * 100).toFixed(1) + '%');
+        right.style.setProperty('--cy', ((e.clientY - rect.top)  / rect.height * 100).toFixed(1) + '%');
+
+        const active = right.querySelector('.work-slide.is-active');
+        if (active) {
+            const idx = parseInt(active.dataset.index) || 0;
+            right.style.setProperty('--glow-color', glowColors[idx]);
+        }
+    });
+
+    right.addEventListener('click', (e) => {
+        if (e.target.closest('.project-cta')) return;
+        const link = right.querySelector('.work-slide.is-active .project-cta');
+        if (link) window.location.href = link.href;
+    });
 })();
 
 /* ============================================================
@@ -381,6 +425,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }, { threshold: 0.12, rootMargin: '0px 0px -48px 0px' });
 
     fadeEls.forEach(el => observer.observe(el));
+})();
+
+/* ============================================================
+   THEME TOGGLE
+============================================================ */
+(function () {
+    var toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+
+    var html = document.documentElement;
+
+    function applyTheme(dark) {
+        if (dark) {
+            html.setAttribute('data-theme', 'dark');
+            toggle.setAttribute('aria-label', 'Switch to light mode');
+        } else {
+            html.removeAttribute('data-theme');
+            toggle.setAttribute('aria-label', 'Switch to dark mode');
+        }
+        document.dispatchEvent(new CustomEvent('themechange'));
+    }
+
+    // Sync aria-label to whatever was set by the no-flash script
+    if (html.getAttribute('data-theme') === 'dark') {
+        toggle.setAttribute('aria-label', 'Switch to light mode');
+    }
+
+    toggle.addEventListener('click', function () {
+        var isDark = html.getAttribute('data-theme') === 'dark';
+        localStorage.setItem('theme', isDark ? 'light' : 'dark');
+        applyTheme(!isDark);
+    });
 })();
 
 /* ============================================================

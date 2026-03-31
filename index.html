@@ -9,15 +9,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <script src="gate.js"></script>
     <script>
         history.scrollRestoration = 'manual';
-        // Remove any hash from URL so the browser doesn't jump to an anchor
         if (window.location.hash) {
             history.replaceState(null, '', window.location.pathname);
         }
+        // Apply saved theme before first paint to prevent flash
+        (function () {
+            var saved = localStorage.getItem('theme');
+            var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (saved === 'dark' || (!saved && prefersDark)) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+            }
+        })();
     </script>
 </head>
 <body>
+
+    <!-- Theme Toggle -->
+    <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M13.5 10.5A6 6 0 0 1 5.5 2.5a6.5 6.5 0 1 0 8 8z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.5"/>
+            <line x1="8" y1="1" x2="8" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="8" y1="13.5" x2="8" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="1" y1="8" x2="2.5" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="13.5" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="3.05" y1="3.05" x2="4.1" y2="4.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.9" y1="11.9" x2="12.95" y2="12.95" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="11.9" y1="4.1" x2="12.95" y2="3.05" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="3.05" y1="12.95" x2="4.1" y2="11.9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+    </button>
 
     <!-- Custom Cursor -->
     <div class="cursor-inner" aria-hidden="true"></div>
@@ -146,6 +172,9 @@
                             </div>
                         </article>
 
+                        <!-- Soft cursor glow -->
+                        <div class="work-glow" aria-hidden="true"></div>
+
                     </div>
                 </div>
             </div>
@@ -155,14 +184,37 @@
         <section class="about" id="about" aria-label="About Julie">
             <div class="about-inner">
                 <span class="section-label">About</span>
-                <div class="about-body">
-                    <p class="about-text">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    </p>
-                    <p class="about-text">
-                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                    </p>
+                <div class="about-right">
+
+                    <!-- Polaroid cluster -->
+                    <div class="polaroid-cluster" aria-label="Personal photos">
+
+                        <div class="polaroid polaroid--1">
+                            <img src="images/about-family.jpg" alt="Our little family" onerror="this.style.opacity='0'">
+                            <p class="polaroid-caption">Our little family</p>
+                        </div>
+
+                        <div class="polaroid polaroid--2">
+                            <img src="images/about-bamtori.jpg" alt="Bamtori's first bow" onerror="this.style.opacity='0'">
+                            <p class="polaroid-caption">Bamtori&rsquo;s first bow</p>
+                        </div>
+
+                        <div class="polaroid polaroid--3">
+                            <img src="images/about-hodu.jpg" alt="Hodu the Australian Shepherd" onerror="this.style.opacity='0'">
+                            <p class="polaroid-caption">Hodu 🐾</p>
+                        </div>
+
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="about-bio">
+                        <p>I like taking things that feel complicated and making them feel simple&mdash;or at least simpler than they were before.</p>
+                        <p>I&rsquo;m a product designer at Apple Inc., where most of the problems I work on start out a little messy and undefined. I&rsquo;m drawn to that space. I care about clarity, flow, and the small details that make something just click without you having to think about it.</p>
+                        <p>Outside of work, I&rsquo;m outnumbered by two very opinionated personalities: my daughter (whose nickname was Bamtori, or &#8220;baby chestnut&#8221;) and my Australian Shepherd, Hodu (&#8220;walnut&#8221;). Life with them is a mix of chaos and joy&mdash;and a pretty good reminder that not everything needs to be perfectly designed to be meaningful.</p>
+                    </div>
+
                     <a href="resume.pdf" class="btn" download>Download Resume &#8595;</a>
+
                 </div>
             </div>
         </section>
@@ -170,10 +222,10 @@
         <!-- Contact -->
         <section class="contact" id="contact" aria-label="Contact">
             <div class="contact-inner">
-                <h2 class="contact-title">Let&#8217;s connect.</h2>
+                <h2 class="contact-title">Oh, hello there.</h2>
                 <div class="contact-links">
-                    <a href="mailto:julie@julieshahn.com" class="contact-link">julie@julieshahn.com</a>
-                    <a href="https://linkedin.com/in/julieshahn" target="_blank" rel="noopener noreferrer" class="contact-link">LinkedIn &#8599;</a>
+                    <a href="mailto:julieahn192@gmail.com" class="contact-link">julieahn192@gmail.com</a>
+                    <a href="https://www.linkedin.com/in/julieshahn" target="_blank" rel="noopener noreferrer" class="contact-link">LinkedIn &#8599;</a>
                 </div>
             </div>
         </section>
@@ -181,7 +233,7 @@
     </main>
 
     <footer class="footer" role="contentinfo">
-        <p>&#169; 2026 Sunghyun &#8220;Julie&#8221; Ahn</p>
+        <p>&#169; 2026 Sunghyun &#8220;Julie&#8221; Ahn &mdash; curiosity + snacks + chaos</p>
     </footer>
 
     <script src="script.js"></script>

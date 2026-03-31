@@ -20,6 +20,19 @@
     --pad-section:  120px;
 }
 
+/* ============================================================
+   DARK MODE
+============================================================ */
+[data-theme="dark"] {
+    --bg:           #141412;
+    --text:         #EEEDE8;
+    --text-muted:   #8A8A82;
+    --accent:       #FFFD74;
+    --border:       #2E2E2A;
+    --card-hover:   rgba(255, 253, 116, 0.08);
+    color-scheme: dark;
+}
+
 html {
     scroll-behavior: smooth;
 }
@@ -32,11 +45,44 @@ body {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     cursor: none;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a, button, [role="button"], input, textarea, select {
     cursor: none;
 }
+
+/* ============================================================
+   THEME TOGGLE BUTTON
+============================================================ */
+.theme-toggle {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 200;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: none;
+    transition: border-color 0.2s ease, color 0.2s ease,
+                background-color 0.3s ease;
+}
+
+.theme-toggle:hover {
+    color: var(--text);
+    border-color: var(--text-muted);
+}
+
+.theme-toggle .icon-sun { display: none; }
+
+[data-theme="dark"] .theme-toggle .icon-moon { display: none; }
+[data-theme="dark"] .theme-toggle .icon-sun  { display: block; }
 
 /* ============================================================
    CUSTOM CURSOR — two rings
@@ -90,13 +136,13 @@ a, button, [role="button"], input, textarea, select {
 .cursor-inner.is-hovering { width: 22px; height: 22px; opacity: 1; }
 .cursor-outer.is-hovering { width: 60px; height: 60px; opacity: 0.5; }
 
-/* Hover project CTAs — outer fills accent, inner shrinks */
-.cursor-inner.is-view { width: 8px; height: 8px; opacity: 0; }
+/* Hover project CTAs — hide inner, outer shows label only */
+.cursor-inner.is-view { display: none; }
 .cursor-outer.is-view {
-    width: 84px;
-    height: 84px;
-    background: var(--accent);
-    border-color: var(--accent);
+    width: auto;
+    height: auto;
+    border: none;
+    background: none;
     opacity: 1;
 }
 
@@ -141,10 +187,10 @@ a, button, [role="button"], input, textarea, select {
 /* Label inside outer ring */
 .cursor-label {
     font-family: 'Inter', sans-serif;
-    font-size: 0.58rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.78rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--text);
     color: var(--text);
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -523,6 +569,25 @@ a, button, [role="button"], input, textarea, select {
     overflow: hidden;
 }
 
+/* Soft cursor glow */
+.work-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    opacity: 0;
+    background: radial-gradient(
+        circle 440px at var(--cx, 50%) var(--cy, 50%),
+        var(--glow-color, rgba(255, 253, 116, 0.22)) 0%,
+        transparent 70%
+    );
+    transition: opacity 0.5s ease;
+}
+
+.work-sticky-right.is-hovered .work-glow {
+    opacity: 1;
+}
+
 .work-slide {
     position: absolute;
     inset: 0;
@@ -531,6 +596,7 @@ a, button, [role="button"], input, textarea, select {
     padding: 60px 72px;
     opacity: 0;
     transform: translateY(52px);
+    z-index: 1;
     transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                 transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
@@ -563,6 +629,7 @@ a, button, [role="button"], input, textarea, select {
     user-select: none;
     letter-spacing: -0.05em;
 }
+
 
 /* Abstract UI preview card — decorative visual per slide */
 .slide-visual {
@@ -707,16 +774,103 @@ a, button, [role="button"], input, textarea, select {
     padding-top: 48px;
 }
 
-.about-body {
-    max-width: 560px;
+.about-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
 }
 
-.about-text {
-    font-size: 1.05rem;
+/* ── Polaroid / scrapbook ──────────────────────────────── */
+.polaroid-cluster {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 0 32px;
+}
+
+.polaroid {
+    background: #FFFEF9;
+    padding: 10px 10px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10), 0 8px 20px rgba(0,0,0,0.07);
+    position: relative;
+    flex-shrink: 0;
+    width: 200px;
+}
+
+/* Tape strip */
+.polaroid::before {
+    content: '';
+    position: absolute;
+    width: 58px;
+    height: 20px;
+    background: rgba(255, 251, 176, 0.78);
+    border-left: 1px solid rgba(210, 198, 120, 0.2);
+    border-right: 1px solid rgba(210, 198, 120, 0.2);
+    top: -9px;
+    z-index: 10;
+}
+
+.polaroid img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: var(--border);
+}
+
+.polaroid-caption {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-style: italic;
+    font-weight: 400;
+    color: #3a3835;
+    text-align: center;
+    letter-spacing: 0.01em;
+    padding: 10px 6px 14px;
+    line-height: 1.4;
+}
+
+/* Individual rotations + tape positions */
+.polaroid--1 {
+    transform: rotate(-3.5deg);
+    z-index: 1;
+    margin-right: -16px;
+}
+.polaroid--1::before {
+    left: 28%;
+    transform: rotate(-7deg);
+}
+
+.polaroid--2 {
+    transform: rotate(2.2deg) translateY(14px);
+    z-index: 3;
+}
+.polaroid--2::before {
+    left: 38%;
+    transform: rotate(4deg);
+}
+
+.polaroid--3 {
+    transform: rotate(-1.6deg) translateY(6px);
+    z-index: 2;
+    margin-left: -16px;
+}
+.polaroid--3::before {
+    left: 33%;
+    transform: rotate(-3deg);
+}
+
+/* Bio text below cluster */
+.about-bio {
+    max-width: 520px;
+}
+
+.about-bio p {
+    font-size: 1rem;
     line-height: 1.8;
     color: var(--text);
     font-weight: 300;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .btn {
@@ -883,7 +1037,7 @@ a, button, [role="button"], input, textarea, select {
 
     .about-inner {
         grid-template-columns: 140px 1fr;
-        gap: 48px;
+        gap: 40px;
     }
 
     .work-sticky-inner {
@@ -956,6 +1110,10 @@ a, button, [role="button"], input, textarea, select {
         gap: 20px;
     }
 
+    .polaroid {
+        width: 140px;
+    }
+
     .contact-title {
         font-size: 2.2rem;
     }
@@ -979,6 +1137,7 @@ a, button, [role="button"], input, textarea, select {
 
     .hero-scroll { display: none; }
 
+    .work-glow { display: none; }
     .slide-visual { display: none; }
 }
 
