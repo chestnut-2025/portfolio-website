@@ -159,7 +159,7 @@
             </div>
         `;
         document.body.appendChild(overlay);
-        document.body.style.overflow = 'hidden';
+        window.scrollTo(0, 0);
 
         var input    = document.getElementById('gate-input');
         var title    = document.getElementById('gate-title');
@@ -205,11 +205,8 @@
             overlay.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName !== 'opacity' || e.target !== overlay) return;
                 overlay.removeEventListener('transitionend', handler);
-                document.body.style.overflow = '';
-                document.documentElement.scrollTop = 0;
-                document.body.scrollTop = 0;
-                overlay.remove();
                 window.scrollTo(0, 0);
+                overlay.remove();
             });
         }
 
