@@ -1,5 +1,8 @@
 (function () {
 
+    /* Disable browser scroll restoration immediately — before DOMContentLoaded */
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
     var HASH = '0104f4cab7d32c34991d5dbb50461a50379c96a3d26b1ba3d50c27ce3d32f3c2';
     var KEY  = 'portfolio_auth';
 
@@ -203,8 +206,10 @@
                 if (e.propertyName !== 'opacity' || e.target !== overlay) return;
                 overlay.removeEventListener('transitionend', handler);
                 document.body.style.overflow = '';
+                document.documentElement.scrollTop = 0;
+                document.body.scrollTop = 0;
                 overlay.remove();
-                requestAnimationFrame(function () { window.scrollTo(0, 0); });
+                window.scrollTo(0, 0);
             });
         }
 
