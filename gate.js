@@ -202,9 +202,9 @@
             overlay.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName !== 'opacity' || e.target !== overlay) return;
                 overlay.removeEventListener('transitionend', handler);
-                window.scrollTo(0, 0);
                 document.body.style.overflow = '';
                 overlay.remove();
+                requestAnimationFrame(function () { window.scrollTo(0, 0); });
             });
         }
 
