@@ -1,369 +1,476 @@
 (function () {
+
+    /* ─────────────────────────────────────────────────────────────
+       CONFIG
+    ───────────────────────────────────────────────────────────── */
     var HASH = '0104f4cab7d32c34991d5dbb50461a50379c96a3d26b1ba3d50c27ce3d32f3c2';
     var KEY  = 'portfolio_auth';
 
     if (sessionStorage.getItem(KEY) === HASH) return;
 
+    /* Prevent flash of content */
     var hideStyle = document.createElement('style');
-    hideStyle.id = 'gate-hide';
     hideStyle.textContent = 'body{visibility:hidden!important}';
     document.head.appendChild(hideStyle);
 
-    function showGate() {
-        document.getElementById('gate-hide').remove();
+    /* ─────────────────────────────────────────────────────────────
+       STYLES
+    ───────────────────────────────────────────────────────────── */
+    var css = /* css */`
+        #gate {
+            position: fixed; inset: 0; z-index: 9999;
+            background: var(--bg, #FAFAF8);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Inter', -apple-system, sans-serif;
+            transform-origin: center;
+            will-change: transform, opacity;
+        }
 
-        /* ── Styles ─────────────────────────────────────────────── */
-        var style = document.createElement('style');
-        style.textContent = [
-            '#gate-overlay{',
-                'position:fixed;inset:0;z-index:9999;',
-                'background:var(--bg,#FAFAF8);',
-                'display:flex;align-items:center;justify-content:center;',
-                'font-family:"Inter",sans-serif;',
-                'transform-origin:center;will-change:transform,opacity;',
-            '}',
-            '#gate-box{',
-                'display:flex;flex-direction:column;align-items:flex-start;',
-                'gap:20px;width:100%;max-width:360px;padding:0 24px;',
-                'transition:opacity 0.3s ease;',
-            '}',
-            '#gate-box.gate-box-hide{opacity:0;pointer-events:none}',
+        /* ── Layout ─────────────────────────────────────────────── */
+        #gate-layout {
+            display: flex;
+            align-items: center;
+            gap: 52px;
+            padding: 0 24px;
+            width: 100%;
+            max-width: 680px;
+        }
+        #gate-content {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            flex: 1;
+            transition: opacity 0.3s ease;
+        }
+        #gate-content.hide { opacity: 0; pointer-events: none; }
 
-            /* icon */
-            '#gate-icon{',
-                'position:relative;width:52px;height:52px;',
-                'margin-bottom:4px;cursor:default;',
-            '}',
-            '#gate-ring{',
-                'position:absolute;inset:0;border-radius:50%;',
-                'border:1.5px solid rgba(26,26,24,0.18);',
-                'box-shadow:0 0 14px rgba(26,26,24,0.07);',
-                'animation:gate-pulse 2.8s ease-in-out infinite;',
-                'transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1),',
-                    'border-color 0.3s ease, box-shadow 0.3s ease, opacity 0.4s ease;',
-            '}',
-            '[data-theme="dark"] #gate-ring{',
-                'border-color:rgba(238,237,232,0.18);',
-                'box-shadow:0 0 14px rgba(238,237,232,0.06);',
-            '}',
-            '#gate-shape{',
-                'position:absolute;top:50%;left:50%;',
-                'width:19px;height:19px;',
-                'transform:translate(-50%,-50%) rotate(0deg);',
-                'background:#F5E03A;border-radius:3px;',
-                'transition:',
-                    'transform 0.4s cubic-bezier(0.34,1.3,0.64,1),',
-                    'border-radius 0.35s ease,',
-                    'width 0.35s ease, height 0.35s ease,',
-                    'opacity 0.3s ease,',
-                    'box-shadow 0.3s ease;',
-            '}',
-            '.gate-keyripple{',
-                'position:absolute;inset:0;border-radius:50%;',
-                'border:1px solid rgba(26,26,24,0.15);',
-                'transform:scale(1);opacity:1;pointer-events:none;',
-                'transition:transform 0.55s ease,opacity 0.55s ease;',
-            '}',
-            '[data-theme="dark"] .gate-keyripple{',
-                'border-color:rgba(238,237,232,0.15);',
-            '}',
-            '.gate-keyripple.go{transform:scale(2.8);opacity:0}',
+        /* ── Circle ─────────────────────────────────────────────── */
+        #gate-circle {
+            position: relative;
+            width: 88px;
+            height: 88px;
+            flex-shrink: 0;
+        }
+        #gate-ring {
+            position: absolute; inset: 0;
+            border-radius: 50%;
+            border: 1.5px solid rgba(26,26,24,0.14);
+            will-change: transform, opacity;
+            animation: gate-idle-pulse 3s ease-in-out infinite;
+            transition:
+                transform 0.4s cubic-bezier(0.25,0,0,1),
+                border-color 0.3s ease,
+                opacity 0.5s ease;
+        }
+        [data-theme="dark"] #gate-ring {
+            border-color: rgba(238,237,232,0.14);
+        }
+        #gate-shape {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 22px; height: 22px;
+            transform: translate(-50%,-50%) rotate(0deg);
+            background: #F5E03A;
+            border-radius: 4px;
+            will-change: transform, border-radius;
+            transition:
+                transform 0.45s cubic-bezier(0.25,0,0,1),
+                border-radius 0.4s cubic-bezier(0.25,0,0,1),
+                width 0.4s cubic-bezier(0.25,0,0,1),
+                height 0.4s cubic-bezier(0.25,0,0,1),
+                opacity 0.3s ease;
+        }
 
-            /* ring states */
-            '.gate-is-typing #gate-ring{',
-                'animation:none;',
-                'border-color:rgba(26,26,24,0.35);',
-                'box-shadow:0 0 8px rgba(26,26,24,0.1);',
-            '}',
-            '[data-theme="dark"] .gate-is-typing #gate-ring{',
-                'border-color:rgba(238,237,232,0.35);',
-            '}',
-            '.gate-is-typing #gate-shape{',
-                'border-radius:2px;',
-                'box-shadow:0 0 6px rgba(245,224,58,0.4);',
-            '}',
-            '.gate-is-error #gate-ring{',
-                'animation:none;',
-                'transform:scale(0.88);',
-                'border-color:rgba(242,170,191,0.6);',
-            '}',
-            '.gate-is-submitting #gate-ring{animation:none}',
-            /* success: shape → diamond */
-            '.gate-is-diamond #gate-shape{',
-                'transform:translate(-50%,-50%) rotate(45deg);',
-                'border-radius:2px;',
-            '}',
-            /* success: diamond → circle */
-            '.gate-is-circle #gate-shape{',
-                'transform:translate(-50%,-50%) rotate(45deg);',
-                'border-radius:50%;width:22px;height:22px;',
-            '}',
-            /* success: ring ripple */
-            '.gate-is-ripple #gate-ring{',
-                'transform:scale(3.5);opacity:0;',
-                'transition:transform 0.6s cubic-bezier(0.2,0,0,1),opacity 0.6s ease;',
-            '}',
+        /* Keystroke ripple */
+        .gate-ripple {
+            position: absolute; inset: 0;
+            border-radius: 50%;
+            border: 1px solid rgba(26,26,24,0.12);
+            transform: scale(1); opacity: 1;
+            pointer-events: none;
+            transition: transform 0.6s cubic-bezier(0.2,0,0,1), opacity 0.6s ease;
+        }
+        [data-theme="dark"] .gate-ripple {
+            border-color: rgba(238,237,232,0.12);
+        }
+        .gate-ripple.expand { transform: scale(3); opacity: 0; }
 
-            /* typography */
-            '#gate-label{',
-                'font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;',
-                'color:var(--text-muted,#888);font-weight:500;',
-            '}',
-            '#gate-title{',
-                'font-size:clamp(1.6rem,4vw,2.2rem);font-weight:600;',
-                'letter-spacing:-0.03em;line-height:1.15;',
-                'color:var(--text,#1A1A18);',
-            '}',
-            '#gate-sub{',
-                'font-size:0.92rem;font-weight:300;',
-                'color:var(--text-muted,#888);margin-top:-8px;',
-            '}',
+        /* ── Circle states ───────────────────────────────────────── */
 
-            /* input row */
-            '#gate-row{display:flex;gap:10px;width:100%}',
-            '#gate-input{',
-                'flex:1;height:44px;padding:0 16px;border-radius:100px;',
-                'border:1px solid var(--border,#E0DED8);',
-                'background:var(--bg,#FAFAF8);',
-                'font-family:"Inter",sans-serif;font-size:0.9rem;',
-                'color:var(--text,#1A1A18);outline:none;',
-                'transition:border-color 0.15s ease;',
-                'caret-color:var(--text,#1A1A18);',
-            '}',
-            '#gate-input::placeholder{color:var(--text-muted,#888)}',
-            '#gate-input:focus{border-color:rgba(26,26,24,0.35)}',
-            '[data-theme="dark"] #gate-input:focus{border-color:rgba(238,237,232,0.35)}',
-            '#gate-input.gate-key-flash{border-color:rgba(26,26,24,0.55)!important}',
-            '[data-theme="dark"] #gate-input.gate-key-flash{border-color:rgba(238,237,232,0.55)!important}',
-            '#gate-input.gate-error{',
-                'border-color:#F2AABF!important;',
-                'animation:gate-shake 0.38s ease;',
-            '}',
-            '#gate-input:disabled{opacity:0.5;cursor:not-allowed}',
-            '#gate-submit{',
-                'height:44px;padding:0 20px;border-radius:100px;',
-                'border:1px solid var(--border,#E0DED8);',
-                'background:var(--bg,#FAFAF8);',
-                'font-family:"Inter",sans-serif;font-size:0.85rem;',
-                'color:var(--text,#1A1A18);cursor:pointer;white-space:nowrap;',
-                'min-width:96px;',
-                'transition:border-color 0.2s ease,color 0.2s ease,opacity 0.2s ease;',
-            '}',
-            '#gate-submit:hover{border-color:rgba(26,26,24,0.45)}',
-            '#gate-submit:disabled{opacity:0.5;cursor:not-allowed}',
-            '#gate-hint{',
-                'font-size:0.82rem;color:var(--text-muted,#888);font-weight:300;',
-                'opacity:0;transition:opacity 0.2s ease;min-height:1.2em;',
-            '}',
-            '#gate-hint.show{opacity:1}',
+        /* Typing: ring tightens */
+        .s-typing #gate-ring {
+            animation: none;
+            transform: scale(0.96);
+            border-color: rgba(26,26,24,0.28);
+        }
+        [data-theme="dark"] .s-typing #gate-ring {
+            border-color: rgba(238,237,232,0.28);
+        }
 
-            /* flash text */
-            '#gate-flash{',
-                'position:absolute;',
-                'font-family:"Inter",sans-serif;',
-                'font-size:clamp(1.6rem,4vw,2.2rem);font-weight:600;',
-                'letter-spacing:-0.03em;color:var(--text,#1A1A18);',
-                'opacity:0;pointer-events:none;',
-                'transition:opacity 0.35s ease;',
-            '}',
-            '#gate-flash.show{opacity:1}',
+        /* Error: ring contracts, pinkish */
+        .s-error #gate-ring {
+            animation: none;
+            transform: scale(0.88);
+            border-color: rgba(242,170,191,0.7);
+        }
+        .s-error #gate-shape {
+            opacity: 0.7;
+        }
 
-            /* chestnut easter egg */
-            '#gate-chestnut{',
-                'position:absolute;font-size:2rem;',
-                'opacity:0;pointer-events:none;',
-                'transition:opacity 0.2s ease;',
-                'user-select:none;',
-            '}',
-            '#gate-chestnut.show{opacity:1}',
+        /* Success step 1: rotate to diamond */
+        .s-diamond #gate-shape {
+            transform: translate(-50%,-50%) rotate(45deg);
+        }
+        /* Success step 2: diamond → circle */
+        .s-circle #gate-shape {
+            transform: translate(-50%,-50%) rotate(45deg);
+            border-radius: 50%;
+            width: 26px; height: 26px;
+        }
+        /* Success step 3: ring ripples out */
+        .s-ripple #gate-ring {
+            transform: scale(3.2);
+            opacity: 0;
+            transition:
+                transform 0.65s cubic-bezier(0.2,0,0,1),
+                opacity 0.65s ease;
+        }
 
-            /* door open */
-            '#gate-overlay.gate-open{',
-                'transition:transform 0.6s cubic-bezier(0.4,0,0.2,1),opacity 0.6s ease;',
-                'transform:scale(1.03);opacity:0;',
-            '}',
+        /* ── Typography ─────────────────────────────────────────── */
+        #gate-label {
+            font-size: 0.62rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--text-muted, #999);
+            font-weight: 500;
+        }
+        #gate-title {
+            font-size: clamp(1.55rem, 3.5vw, 2.1rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--text, #1A1A18);
+            margin: 0;
+        }
+        #gate-sub {
+            font-size: 0.9rem;
+            font-weight: 300;
+            color: var(--text-muted, #999);
+            margin: -6px 0 0;
+            line-height: 1.5;
+        }
 
-            /* keyframes */
-            '@keyframes gate-pulse{',
-                '0%,100%{opacity:0.7;box-shadow:0 0 8px rgba(26,26,24,0.05)}',
-                '50%{opacity:1;box-shadow:0 0 18px rgba(26,26,24,0.13)}',
-            '}',
-            '@keyframes gate-shake{',
-                '0%,100%{transform:translateX(0)}',
-                '20%{transform:translateX(-5px)}',
-                '60%{transform:translateX(5px)}',
-                '80%{transform:translateX(-3px)}',
-            '}',
-        ].join('');
-        document.head.appendChild(style);
+        /* ── Input row ───────────────────────────────────────────── */
+        #gate-row { display: flex; gap: 10px; width: 100%; }
 
-        /* ── HTML ───────────────────────────────────────────────── */
-        var overlay = document.createElement('div');
-        overlay.id = 'gate-overlay';
-        overlay.setAttribute('role', 'dialog');
-        overlay.setAttribute('aria-modal', 'true');
-        overlay.innerHTML = [
-            '<div id="gate-flash" aria-hidden="true">There it is.</div>',
-            '<div id="gate-chestnut" aria-hidden="true">🌰</div>',
-            '<div id="gate-box">',
-                '<div id="gate-icon">',
-                    '<div id="gate-ring"></div>',
-                    '<div id="gate-shape"></div>',
-                '</div>',
-                '<span id="gate-label">Julie Ahn &mdash; Portfolio</span>',
-                '<h1 id="gate-title">Not everything<br>is public.</h1>',
-                '<p id="gate-sub">This is one of those things.</p>',
-                '<div id="gate-row">',
-                    '<input id="gate-input" type="password" placeholder="Enter password"',
-                        ' autocomplete="current-password" aria-label="Password">',
-                    '<button id="gate-submit">Enter &#8594;</button>',
-                '</div>',
-                '<p id="gate-hint">Not quite.</p>',
-            '</div>',
-        ].join('');
-        document.body.appendChild(overlay);
+        #gate-input {
+            flex: 1; height: 44px; padding: 0 18px;
+            border-radius: 100px;
+            border: 1px solid var(--border, #E0DED8);
+            background: var(--bg, #FAFAF8);
+            font-family: inherit; font-size: 0.88rem;
+            color: var(--text, #1A1A18);
+            outline: none;
+            caret-color: var(--text, #1A1A18);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        #gate-input::placeholder { color: var(--text-muted, #999); }
+        #gate-input:focus {
+            border-color: rgba(26,26,24,0.3);
+            box-shadow: 0 0 0 3px rgba(26,26,24,0.04);
+        }
+        [data-theme="dark"] #gate-input:focus {
+            border-color: rgba(238,237,232,0.3);
+            box-shadow: 0 0 0 3px rgba(238,237,232,0.04);
+        }
+        #gate-input.flash {
+            border-color: rgba(26,26,24,0.45) !important;
+        }
+        [data-theme="dark"] #gate-input.flash {
+            border-color: rgba(238,237,232,0.45) !important;
+        }
+        #gate-input.shake {
+            animation: gate-shake 0.38s cubic-bezier(0.36,0.07,0.19,0.97);
+            border-color: rgba(242,170,191,0.6) !important;
+        }
+        #gate-input:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        var input    = document.getElementById('gate-input');
-        var submit   = document.getElementById('gate-submit');
-        var hint     = document.getElementById('gate-hint');
-        var box      = document.getElementById('gate-box');
-        var icon     = document.getElementById('gate-icon');
-        var flash    = document.getElementById('gate-flash');
-        var chestnut = document.getElementById('gate-chestnut');
-        var flashTimer, errorTimer;
+        #gate-btn {
+            height: 44px; padding: 0 22px;
+            border-radius: 100px;
+            border: 1px solid var(--border, #E0DED8);
+            background: var(--bg, #FAFAF8);
+            font-family: inherit; font-size: 0.85rem;
+            color: var(--text, #1A1A18);
+            cursor: pointer; white-space: nowrap;
+            min-width: 96px;
+            transition: border-color 0.2s ease, opacity 0.2s ease;
+        }
+        #gate-btn:hover:not(:disabled) { border-color: rgba(26,26,24,0.38); }
+        #gate-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-        input.focus();
+        #gate-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted, #999);
+            font-weight: 300;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            min-height: 1.1em;
+        }
+        #gate-hint.show { opacity: 1; }
 
-        /* ── Keystroke feedback ─────────────────────────────────── */
-        input.addEventListener('input', function () {
-            icon.classList.add('gate-is-typing');
-            hint.classList.remove('show');
+        /* ── Success overlay ─────────────────────────────────────── */
+        #gate-flash {
+            position: absolute;
+            display: flex; flex-direction: column;
+            align-items: center; gap: 12px;
+            pointer-events: none;
+            opacity: 0;
+        }
+        #gate-flash-text {
+            font-size: clamp(1.55rem, 3.5vw, 2.1rem);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            color: var(--text, #1A1A18);
+        }
+        #gate-egg {
+            font-size: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
 
-            // Border flash
-            input.classList.add('gate-key-flash');
-            clearTimeout(flashTimer);
-            flashTimer = setTimeout(function () {
-                input.classList.remove('gate-key-flash');
-            }, 140);
+        /* ── Door open ───────────────────────────────────────────── */
+        #gate.opening {
+            transition: transform 0.65s cubic-bezier(0.4,0,0.2,1), opacity 0.65s ease;
+            transform: scale(1.025);
+            opacity: 0;
+        }
 
-            // Ripple from icon
-            var r = document.createElement('div');
-            r.className = 'gate-keyripple';
-            icon.appendChild(r);
-            requestAnimationFrame(function () {
-                requestAnimationFrame(function () { r.classList.add('go'); });
-            });
-            setTimeout(function () { r.remove(); }, 600);
+        /* ── Keyframes ───────────────────────────────────────────── */
+        @keyframes gate-idle-pulse {
+            0%, 100% { opacity: 0.65; }
+            50%       { opacity: 1; }
+        }
+        @keyframes gate-shake {
+            0%,100% { transform: translateX(0); }
+            20%     { transform: translateX(-4px); }
+            60%     { transform: translateX(4px); }
+            80%     { transform: translateX(-2px); }
+        }
+        @keyframes gate-flash-in {
+            from { opacity: 0; transform: translateY(8px); filter: blur(5px); }
+            to   { opacity: 1; transform: translateY(0);   filter: blur(0); }
+        }
 
-            if (!input.value) icon.classList.remove('gate-is-typing');
+        /* ── Responsive ──────────────────────────────────────────── */
+        @media (max-width: 540px) {
+            #gate-layout { flex-direction: column; gap: 36px; align-items: flex-start; padding: 0 28px; }
+            #gate-circle { width: 64px; height: 64px; }
+        }
+    `;
+
+    var styleEl = document.createElement('style');
+    styleEl.textContent = css;
+    document.head.appendChild(styleEl);
+
+    /* ─────────────────────────────────────────────────────────────
+       HTML
+    ───────────────────────────────────────────────────────────── */
+    var overlay = document.createElement('div');
+    overlay.id  = 'gate';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.innerHTML = `
+        <div id="gate-flash" aria-live="polite">
+            <span id="gate-flash-text">There it is.</span>
+            <span id="gate-egg" aria-hidden="true">🌰</span>
+        </div>
+
+        <div id="gate-layout">
+            <div id="gate-circle">
+                <div id="gate-ring"></div>
+                <div id="gate-shape"></div>
+            </div>
+
+            <div id="gate-content">
+                <span id="gate-label">Julie Ahn — Portfolio</span>
+                <h1 id="gate-title">Not everything<br>is public.</h1>
+                <p id="gate-sub">This is one of those things.</p>
+                <div id="gate-row">
+                    <input id="gate-input" type="password"
+                        placeholder="Enter password"
+                        autocomplete="current-password"
+                        aria-label="Password">
+                    <button id="gate-btn">Enter &#8594;</button>
+                </div>
+                <p id="gate-hint" aria-live="polite">Not quite.</p>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    /* ─────────────────────────────────────────────────────────────
+       REFS
+    ───────────────────────────────────────────────────────────── */
+    var circle  = document.getElementById('gate-circle');
+    var input   = document.getElementById('gate-input');
+    var btn     = document.getElementById('gate-btn');
+    var hint    = document.getElementById('gate-hint');
+    var content = document.getElementById('gate-content');
+    var flash   = document.getElementById('gate-flash');
+    var egg     = document.getElementById('gate-egg');
+
+    var flashTimer, errorResetTimer;
+
+    input.focus();
+
+    /* ─────────────────────────────────────────────────────────────
+       HELPERS
+    ───────────────────────────────────────────────────────────── */
+    function setCircleState(state) {
+        circle.className = state ? 's-' + state : '';
+    }
+
+    function spawnRipple() {
+        var r = document.createElement('div');
+        r.className = 'gate-ripple';
+        circle.appendChild(r);
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () { r.classList.add('expand'); });
         });
+        setTimeout(function () { r.remove(); }, 700);
+    }
 
-        /* ── Error state ────────────────────────────────────────── */
-        function showError() {
-            icon.classList.remove('gate-is-submitting','gate-is-typing');
-            icon.classList.add('gate-is-error');
-            input.classList.add('gate-error');
-            hint.classList.add('show');
-            input.value = '';
+    /* ─────────────────────────────────────────────────────────────
+       INPUT BEHAVIOR
+    ───────────────────────────────────────────────────────────── */
+    input.addEventListener('input', function () {
+        hint.classList.remove('show');
 
-            clearTimeout(errorTimer);
-            errorTimer = setTimeout(function () {
-                icon.classList.remove('gate-is-error');
-                input.classList.remove('gate-error');
-                input.disabled = false;
-                submit.disabled = false;
-                submit.innerHTML = 'Enter &#8594;';
-                input.focus();
-            }, 820);
+        if (!input.value) {
+            setCircleState(null);
+            return;
         }
 
-        /* ── Success sequence ───────────────────────────────────── */
-        function openDoor() {
-            // Step 1: button → "…", lock input
-            submit.innerHTML = '&hellip;';
-            submit.disabled = true;
-            input.disabled = true;
-            icon.classList.remove('gate-is-typing');
-            icon.classList.add('gate-is-submitting');
+        setCircleState('typing');
 
-            // Step 2: shape rotates → diamond
-            setTimeout(function () {
-                icon.classList.add('gate-is-diamond');
-            }, 220);
+        /* Border flash */
+        input.classList.add('flash');
+        clearTimeout(flashTimer);
+        flashTimer = setTimeout(function () {
+            input.classList.remove('flash');
+        }, 130);
 
-            // Step 3: diamond → circle
-            setTimeout(function () {
-                icon.classList.remove('gate-is-diamond');
-                icon.classList.add('gate-is-circle');
-            }, 540);
+        /* Keystroke ripple */
+        spawnRipple();
+    });
 
-            // Step 4: ring ripples outward
-            setTimeout(function () {
-                icon.classList.add('gate-is-ripple');
-            }, 720);
+    /* ─────────────────────────────────────────────────────────────
+       ERROR
+    ───────────────────────────────────────────────────────────── */
+    function showError() {
+        setCircleState('error');
+        input.classList.add('shake');
+        hint.classList.add('show');
+        input.value = '';
 
-            // Step 5: 🌰 flash
-            setTimeout(function () {
-                chestnut.classList.add('show');
-                setTimeout(function () {
-                    chestnut.classList.remove('show');
-                }, 340);
-            }, 860);
+        input.addEventListener('animationend', function () {
+            input.classList.remove('shake');
+        }, { once: true });
 
-            // Step 6: box fades, "There it is." appears
-            setTimeout(function () {
-                box.classList.add('gate-box-hide');
-                flash.classList.add('show');
-            }, 1000);
+        clearTimeout(errorResetTimer);
+        errorResetTimer = setTimeout(function () {
+            setCircleState(null);
+            input.disabled  = false;
+            btn.disabled    = false;
+            btn.innerHTML   = 'Enter &#8594;';
+            input.focus();
+        }, 750);
+    }
 
-            // Step 7: flash fades, door opens
-            setTimeout(function () {
-                flash.style.transition = 'opacity 0.3s ease';
-                flash.style.opacity    = '0';
-                overlay.classList.add('gate-open');
-            }, 1600);
+    /* ─────────────────────────────────────────────────────────────
+       SUCCESS SEQUENCE
+    ───────────────────────────────────────────────────────────── */
+    function openDoor() {
+        /* ① shape → diamond */
+        setTimeout(function () { setCircleState('diamond'); }, 80);
 
-            overlay.addEventListener('transitionend', function handler(e) {
-                if (e.propertyName !== 'opacity' || e.target !== overlay) return;
-                overlay.removeEventListener('transitionend', handler);
-                overlay.remove();
-            });
-        }
+        /* ② diamond → circle */
+        setTimeout(function () { setCircleState('circle'); }, 320);
 
-        /* ── Attempt ────────────────────────────────────────────── */
-        function attempt() {
-            var val = input.value.trim();
-            if (!val || submit.disabled) return;
+        /* ③ ring ripple */
+        setTimeout(function () { setCircleState('ripple'); }, 480);
 
-            // Immediately acknowledge
-            submit.innerHTML = '&hellip;';
-            submit.disabled = true;
-            input.disabled = true;
+        /* ④ content fades, "There it is." animates in (blur → sharp) */
+        setTimeout(function () {
+            content.classList.add('hide');
+            flash.style.animation = 'gate-flash-in 0.45s cubic-bezier(0.25,0,0,1) forwards';
+        }, 580);
 
-            crypto.subtle.digest('SHA-256', new TextEncoder().encode(val))
-                .then(function (buf) {
-                    var hex = Array.from(new Uint8Array(buf))
-                        .map(function (b) { return b.toString(16).padStart(2, '0'); })
-                        .join('');
+        /* ⑤ 🌰 easter egg flash */
+        setTimeout(function () {
+            egg.style.opacity = '1';
+            setTimeout(function () { egg.style.opacity = '0'; }, 300);
+        }, 820);
 
-                    if (hex === HASH) {
-                        sessionStorage.setItem(KEY, HASH);
-                        openDoor();
-                    } else {
-                        showError();
-                    }
-                });
-        }
+        /* ⑥ door opens */
+        setTimeout(function () {
+            flash.style.transition = 'opacity 0.3s ease';
+            flash.style.opacity    = '0';
+            overlay.classList.add('opening');
+        }, 1100);
 
-        submit.addEventListener('click', attempt);
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') attempt();
+        overlay.addEventListener('transitionend', function handler(e) {
+            if (e.propertyName !== 'opacity' || e.target !== overlay) return;
+            overlay.removeEventListener('transitionend', handler);
+            overlay.remove();
         });
+    }
+
+    /* ─────────────────────────────────────────────────────────────
+       ATTEMPT
+    ───────────────────────────────────────────────────────────── */
+    function attempt() {
+        var val = input.value.trim();
+        if (!val || btn.disabled) return;
+
+        /* Acknowledge immediately */
+        btn.innerHTML  = '&hellip;';
+        btn.disabled   = true;
+        input.disabled = true;
+        setCircleState(null);
+
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(val))
+            .then(function (buf) {
+                var hex = Array.from(new Uint8Array(buf))
+                    .map(function (b) { return b.toString(16).padStart(2, '0'); })
+                    .join('');
+
+                if (hex === HASH) {
+                    sessionStorage.setItem(KEY, HASH);
+                    openDoor();
+                } else {
+                    showError();
+                }
+            });
+    }
+
+    btn.addEventListener('click', attempt);
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') attempt();
+    });
+
+    /* ─────────────────────────────────────────────────────────────
+       INIT — reveal gate
+    ───────────────────────────────────────────────────────────── */
+    function init() {
+        hideStyle.remove();
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', showGate);
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        showGate();
+        init();
     }
+
 })();
