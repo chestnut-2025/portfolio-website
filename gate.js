@@ -185,10 +185,18 @@
 
         /* ── Success ───────────────────────────────────────────── */
         function openDoor() {
-            /* Headline swaps instantly */
+            /* Kill smooth-scroll + scroll anchoring so our scrollTo is instant */
+            document.documentElement.style.scrollBehavior = 'auto';
+            document.documentElement.style.overflowAnchor = 'none';
+
+            window.scrollTo(0, 0);
+            document.documentElement.scrollTop = 0;
+            document.body.scrollTop = 0;
+
+            /* Headline swaps */
             title.textContent = 'There it is.';
 
-            /* 🌰 — brief, invisible to most, yours to know */
+            /* 🌰 */
             setTimeout(function () {
                 var egg = document.createElement('span');
                 egg.textContent = '🌰';
@@ -197,17 +205,38 @@
                 setTimeout(function () { egg.remove(); }, 200);
             }, 50);
 
-            /* Page fades out */
+            /* Gate fades */
             setTimeout(function () {
                 overlay.classList.add('exiting');
             }, 80);
 
+            /* Remove after fade — with fallback in case transitionend misfires */
+            var done = false;
+            function finish() {
+                if (done) return;
+                done = true;
+                overlay.remove();
+
+                /* Instant snap to top, then guard against anything that tries to scroll */
+                window.scrollTo(0, 0);
+                var guardActive = true;
+                var guardHandler = function () {
+                    if (guardActive && window.scrollY > 0) window.scrollTo(0, 0);
+                };
+                window.addEventListener('scroll', guardHandler, { passive: true });
+                setTimeout(function () {
+                    guardActive = false;
+                    window.removeEventListener('scroll', guardHandler);
+                    document.documentElement.style.scrollBehavior = '';
+                    document.documentElement.style.overflowAnchor = '';
+                }, 400);
+            }
             overlay.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName !== 'opacity' || e.target !== overlay) return;
                 overlay.removeEventListener('transitionend', handler);
-                window.scrollTo(0, 0);
-                overlay.remove();
+                finish();
             });
+            setTimeout(finish, 800);
         }
 
         /* ── Attempt ───────────────────────────────────────────── */
