@@ -2,21 +2,17 @@
     var HASH = '0104f4cab7d32c34991d5dbb50461a50379c96a3d26b1ba3d50c27ce3d32f3c2';
     var KEY  = 'portfolio_auth';
 
-    // If already authenticated, do nothing
     if (sessionStorage.getItem(KEY) === HASH) return;
 
-    // Hide body immediately to prevent flash of content
+    // Hide body immediately — no flash
     var hideStyle = document.createElement('style');
     hideStyle.id = 'gate-hide';
     hideStyle.textContent = 'body { visibility: hidden !important; }';
     document.head.appendChild(hideStyle);
 
     function showGate() {
-        // Reveal body (gate overlay will cover it)
         document.getElementById('gate-hide').remove();
-        document.body.style.visibility = '';
 
-        // Inject gate styles
         var style = document.createElement('style');
         style.textContent = [
             '#gate-overlay{',
@@ -24,12 +20,12 @@
                 'background:var(--bg,#FAFAF8);',
                 'display:flex;align-items:center;justify-content:center;',
                 'font-family:"Inter",sans-serif;',
-                'transition:opacity 0.4s ease;',
+                'transform-origin:center center;',
+                'will-change:transform,opacity;',
             '}',
-            '#gate-overlay.gate-out{opacity:0;pointer-events:none}',
             '#gate-box{',
                 'display:flex;flex-direction:column;align-items:flex-start;',
-                'gap:24px;width:100%;max-width:360px;padding:0 24px;',
+                'gap:20px;width:100%;max-width:360px;padding:0 24px;',
             '}',
             '#gate-label{',
                 'font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;',
@@ -37,8 +33,13 @@
             '}',
             '#gate-title{',
                 'font-size:clamp(1.6rem,4vw,2.2rem);font-weight:600;',
-                'letter-spacing:-0.03em;line-height:1.1;',
+                'letter-spacing:-0.03em;line-height:1.15;',
                 'color:var(--text,#1A1A18);',
+            '}',
+            '#gate-sub{',
+                'font-size:0.92rem;font-weight:300;',
+                'color:var(--text-muted,#888);line-height:1.5;',
+                'margin-top:-8px;',
             '}',
             '#gate-row{display:flex;gap:10px;width:100%}',
             '#gate-input{',
@@ -52,7 +53,7 @@
             '}',
             '#gate-input::placeholder{color:var(--text-muted,#888)}',
             '#gate-input:focus{border-color:var(--text-muted,#888)}',
-            '#gate-input.gate-error{border-color:#F2AABF;animation:gate-shake 0.35s ease}',
+            '#gate-input.gate-error{border-color:#F2AABF;animation:gate-shake 0.4s ease}',
             '#gate-submit{',
                 'height:44px;padding:0 20px;border-radius:100px;',
                 'border:1px solid var(--border,#E0DED8);',
@@ -63,10 +64,35 @@
             '}',
             '#gate-submit:hover{border-color:var(--text-muted,#888)}',
             '#gate-hint{',
-                'font-size:0.78rem;color:var(--text-muted,#888);',
-                'font-weight:300;opacity:0;transition:opacity 0.2s ease;',
+                'font-size:0.82rem;color:var(--text-muted,#888);',
+                'font-weight:300;opacity:0;',
+                'transition:opacity 0.2s ease;',
+                'min-height:1.2em;',
             '}',
             '#gate-hint.gate-hint-show{opacity:1}',
+
+            /* entry moment */
+            '#gate-flash{',
+                'position:absolute;',
+                'font-size:clamp(1.6rem,4vw,2.2rem);font-weight:600;',
+                'letter-spacing:-0.03em;',
+                'color:var(--text,#1A1A18);',
+                'opacity:0;',
+                'pointer-events:none;',
+                'transition:opacity 0.35s ease;',
+            '}',
+            '#gate-flash.gate-flash-show{opacity:1}',
+
+            '#gate-box.gate-form-hide{',
+                'opacity:0;transition:opacity 0.3s ease;',
+            '}',
+
+            '#gate-overlay.gate-open{',
+                'transition:transform 0.55s cubic-bezier(0.4,0,0.2,1), opacity 0.55s ease;',
+                'transform:scale(1.03);',
+                'opacity:0;',
+            '}',
+
             '@keyframes gate-shake{',
                 '0%,100%{transform:translateX(0)}',
                 '20%{transform:translateX(-6px)}',
@@ -76,20 +102,21 @@
         ].join('');
         document.head.appendChild(style);
 
-        // Inject gate HTML
         var overlay = document.createElement('div');
         overlay.id = 'gate-overlay';
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.innerHTML = [
+            '<div id="gate-flash" aria-hidden="true">There it is.</div>',
             '<div id="gate-box">',
                 '<span id="gate-label">Julie Ahn &mdash; Portfolio</span>',
-                '<h1 id="gate-title">Password<br>required.</h1>',
+                '<h1 id="gate-title">Not everything<br>is public.</h1>',
+                '<p id="gate-sub">This is one of those things.</p>',
                 '<div id="gate-row">',
                     '<input id="gate-input" type="password" placeholder="Enter password" autocomplete="current-password" aria-label="Password">',
                     '<button id="gate-submit">Enter &#8594;</button>',
                 '</div>',
-                '<p id="gate-hint">Incorrect password</p>',
+                '<p id="gate-hint">Hmmm, not quite</p>',
             '</div>'
         ].join('');
         document.body.appendChild(overlay);
@@ -97,8 +124,34 @@
         var input  = document.getElementById('gate-input');
         var submit = document.getElementById('gate-submit');
         var hint   = document.getElementById('gate-hint');
+        var box    = document.getElementById('gate-box');
+        var flash  = document.getElementById('gate-flash');
 
         input.focus();
+
+        function openDoor() {
+            // 1. Form fades out
+            box.classList.add('gate-form-hide');
+
+            // 2. "There it is." fades in
+            setTimeout(function () {
+                flash.classList.add('gate-flash-show');
+            }, 250);
+
+            // 3. Screen scales open and fades
+            setTimeout(function () {
+                flash.style.transition = 'opacity 0.3s ease';
+                flash.style.opacity = '0';
+                overlay.classList.add('gate-open');
+            }, 900);
+
+            // 4. Remove overlay, page is live
+            overlay.addEventListener('transitionend', function handler(e) {
+                if (e.propertyName !== 'opacity') return;
+                overlay.removeEventListener('transitionend', handler);
+                overlay.remove();
+            });
+        }
 
         function attempt() {
             var val = input.value.trim();
@@ -112,10 +165,7 @@
 
                     if (hex === HASH) {
                         sessionStorage.setItem(KEY, HASH);
-                        overlay.classList.add('gate-out');
-                        overlay.addEventListener('transitionend', function () {
-                            overlay.remove();
-                        }, { once: true });
+                        openDoor();
                     } else {
                         input.classList.add('gate-error');
                         hint.classList.add('gate-hint-show');
