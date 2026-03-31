@@ -296,6 +296,7 @@
         var egg     = document.getElementById('gate-egg');
         var flashTimer, errorTimer;
 
+        document.body.style.overflow = 'hidden';
         input.focus();
 
         /* Helpers */
@@ -370,6 +371,8 @@
             overlay.addEventListener('transitionend', function handler(e) {
                 if (e.propertyName !== 'opacity' || e.target !== overlay) return;
                 overlay.removeEventListener('transitionend', handler);
+                window.scrollTo(0, 0);
+                document.body.style.overflow = '';
                 overlay.remove();
             });
         }
