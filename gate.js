@@ -93,11 +93,20 @@
         }
         [data-theme="dark"] #gate-name { color: #EEEDE8; }
 
+        #gate-nickname {
+            font-size: 12.5px;
+            color: #B0B0AA;
+            font-style: italic;
+            font-weight: 300;
+            margin: 5px 0 0;
+        }
+        [data-theme="dark"] #gate-nickname { color: #4A4A46; }
+
         #gate-company {
             font-size: 13px;
             color: #888884;
             font-weight: 400;
-            margin: 8px 0 0;
+            margin: 10px 0 0;
         }
         [data-theme="dark"] #gate-company { color: #555; }
 
@@ -256,7 +265,8 @@
                 <div class="gate-card" id="gate-name-card">
                     <span id="gate-name-tag">Product Designer</span>
                     <div>
-                        <p id="gate-name">Sunghyun<br>&ldquo;Julie&rdquo; Ahn</p>
+                        <p id="gate-name">Sunghyun Ahn</p>
+                        <p id="gate-nickname">(I go by Julie)</p>
                         <p id="gate-company">Apple Inc.</p>
                     </div>
                     <p id="gate-tagline">Making complex systems feel simple.</p>
@@ -271,7 +281,7 @@
 
                 <!-- Experience stat -->
                 <div class="gate-card gate-stat-card" id="gate-years-card">
-                    <span class="gate-stat-num">7+</span>
+                    <span class="gate-stat-num">4+</span>
                     <span class="gate-stat-label">Years Experience</span>
                     <span class="gate-stat-sub">Enterprise &amp;<br>consumer products</span>
                 </div>
@@ -301,6 +311,32 @@
         var cards = overlay.querySelectorAll('.gate-card');
         cards.forEach(function (card, i) {
             setTimeout(function () { card.classList.add('visible'); }, 40 + i * 70);
+        });
+
+        /* ── Subtle parallax ───────────────────────────────────── */
+        /* Depth per card: name, cases, years, password (px max shift) */
+        var depths = [5, 9, 9, 2];
+        var parallaxReady = false;
+        setTimeout(function () { parallaxReady = true; }, 900);
+
+        overlay.addEventListener('mousemove', function (e) {
+            if (!parallaxReady) return;
+            var rect = overlay.getBoundingClientRect();
+            var dx = ((e.clientX - rect.left) / rect.width  - 0.5) * 2; /* -1 → 1 */
+            var dy = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+            cards.forEach(function (card, i) {
+                var d = depths[i] || 4;
+                card.style.transition = 'transform 0.25s ease';
+                card.style.transform  = 'translate(' + (dx * d).toFixed(2) + 'px,' + (dy * d).toFixed(2) + 'px)';
+            });
+        });
+
+        overlay.addEventListener('mouseleave', function () {
+            if (!parallaxReady) return;
+            cards.forEach(function (card) {
+                card.style.transition = 'transform 0.6s ease';
+                card.style.transform  = 'translate(0,0)';
+            });
         });
 
         var input    = document.getElementById('gate-input');
